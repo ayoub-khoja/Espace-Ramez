@@ -1,0 +1,16 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Espace Ramez — Administration{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'portal/css/app.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  <div class="shell">
+    {% block content %}{% endblock %}
+  </div>
+</body>
+</html>

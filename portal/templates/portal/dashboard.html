@@ -1,0 +1,73 @@
+{% extends "portal/base.html" %}
+{% load static %}
+{% block title %}Tableau de bord — Espace Ramez{% endblock %}
+{% block body_class %}page-dashboard{% endblock %}
+
+{% block content %}
+<div class="dash-layout">
+  <aside class="dash-sidebar">
+    <div class="dash-brand">
+      <div class="dash-logo">{% include "portal/partials/logo_svg.html" %}</div>
+      <div>
+        <div class="dash-brand-title">Portail admin</div>
+        <div class="dash-brand-sub">Gestion des terrains</div>
+      </div>
+    </div>
+
+    <nav class="dash-nav" aria-label="Navigation">
+      <a class="dash-nav-item is-active" href="{% url 'portal:dashboard' %}">Tableau de bord</a>
+      <a class="dash-nav-item" href="#">Réservations</a>
+      <a class="dash-nav-item" href="#">Actualités</a>
+      <a class="dash-nav-item" href="#">Paramètres</a>
+    </nav>
+
+    <a class="dash-btn-new" href="#">+ Nouvelle réservation</a>
+
+    <div class="dash-sidebar-bottom">
+      <div class="dash-user">
+        <div class="dash-avatar">{{ user.username|slice:":2"|upper }}</div>
+        <div>
+          <div class="dash-user-name">{{ user.get_full_name|default:user.username }}</div>
+          <div class="dash-user-role">Administrateur</div>
+        </div>
+      </div>
+      <form method="post" action="{% url 'portal:logout' %}" class="dash-logout-form">
+        {% csrf_token %}
+        <button type="submit" class="dash-logout">Déconnexion</button>
+      </form>
+    </div>
+  </aside>
+
+  <div class="dash-main">
+    <header class="dash-header">
+      <div>
+        <h2 class="dash-page-title">Vue d’ensemble</h2>
+        <p class="dash-page-sub">Pilotage des réservations et des terrains (MVT — templates Django).</p>
+      </div>
+      <div class="dash-header-meta">
+        <span class="pill-live"><span class="dot"></span> En ligne</span>
+      </div>
+    </header>
+
+    <section class="dash-stats">
+      {% for s in stats %}
+      <article class="stat-card stat-{{ s.accent }}">
+        <div class="stat-label">{{ s.label }}</div>
+        <div class="stat-value">{{ s.value }}</div>
+      </article>
+      {% endfor %}
+    </section>
+
+    <section class="dash-panel">
+      <div class="dash-panel-head">
+        <h3>Activité récente</h3>
+        <a href="#" class="link-muted">Voir tout</a>
+      </div>
+      <p class="dash-panel-placeholder">
+        Les listes détaillées (réservations, clients…) pourront être branchées ici via le
+        <strong>modèle</strong> Django, une <strong>vue</strong> et un <strong>template</strong> dédiés.
+      </p>
+    </section>
+  </div>
+</div>
+{% endblock %}

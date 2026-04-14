@@ -1,0 +1,107 @@
+{% extends "portal/base.html" %}
+{% load static %}
+{% block title %}Connexion — Espace Ramez{% endblock %}
+{% block body_class %}page-login{% endblock %}
+
+{% block extra_head %}
+<style>
+  body.page-login {
+    background-color: #030a14;
+    background-image:
+      linear-gradient(155deg, rgba(0, 14, 36, 0.9) 0%, rgba(0, 24, 52, 0.72) 42%, rgba(0, 6, 18, 0.92) 100%),
+      url("{% static 'HomeClient.png' %}");
+    background-size: cover;
+    background-position: center 35%;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-wrap">
+  <div class="login-brand">
+    <div class="login-logo" aria-hidden="true">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+        <ellipse cx="10" cy="9" rx="5.5" ry="6.5" transform="rotate(-20 10 9)" stroke="currentColor" stroke-width="1.75"/>
+        <path d="M14 12 L20 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="17.5" cy="17" r="1.85" fill="currentColor"/>
+      </svg>
+    </div>
+    <h1 class="login-brand-title">Espace Ramez</h1>
+    <p class="login-brand-sub">Accès portail administrateur</p>
+  </div>
+
+  <div class="login-card">
+    <form method="post" action="{% url 'portal:login' %}" class="login-form">
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="login-alert" role="alert">
+          {% for err in form.non_field_errors %}<p>{{ err }}</p>{% endfor %}
+        </div>
+      {% endif %}
+
+      <div class="field">
+        <label class="field-label" for="id_username">Identifiant</label>
+        <div class="field-input-wrap">
+          <span class="field-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </span>
+          <input type="text" name="username" id="id_username" class="field-input" placeholder="Nom d’utilisateur ou e-mail"
+                 value="{{ form.username.value|default_if_none:'' }}" autofocus autocomplete="username" required>
+        </div>
+        {% if form.username.errors %}<p class="field-error">{{ form.username.errors.0 }}</p>{% endif %}
+      </div>
+
+      <div class="field">
+        <div class="field-label-row">
+          <label class="field-label" for="id_password">Mot de passe</label>
+          <span class="field-link-muted">Récupérer l’accès</span>
+        </div>
+        <div class="field-input-wrap">
+          <span class="field-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="5" y="11" width="14" height="10" rx="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </span>
+          <input type="password" name="password" id="id_password" class="field-input" placeholder="••••••••"
+                 autocomplete="current-password" required>
+        </div>
+        {% if form.password.errors %}<p class="field-error">{{ form.password.errors.0 }}</p>{% endif %}
+      </div>
+
+      <label class="trust-row">
+        <input type="checkbox" name="remember" class="trust-check">
+        <span>Faire confiance à ce poste pendant 30 jours</span>
+      </label>
+
+      {% if request.GET.next %}<input type="hidden" name="next" value="{{ request.GET.next }}">{% endif %}
+
+      <button type="submit" class="btn-primary">
+        S’authentifier en toute sécurité
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+          <path d="M10 17 15 12 10 7" stroke-linecap="round"/>
+          <path d="M15 12H3" stroke-linecap="round"/>
+        </svg>
+      </button>
+
+      <p class="badge-danger">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/>
+        </svg>
+        Personnel autorisé uniquement
+      </p>
+    </form>
+  </div>
+
+  <p class="login-footer">
+    Un souci technique ?
+    <a href="mailto:sysadmin@espaceramez.tn">Contacter l’administrateur système</a>
+  </p>
+</div>
+{% endblock %}
