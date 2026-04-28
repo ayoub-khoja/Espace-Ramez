@@ -13,6 +13,7 @@
   {% url "portal:offer_list" as url_offers %}
   {% url "portal:client_list" as url_clients %}
   {% url "portal:availability_list" as url_availability %}
+  {% url "portal:reservation_list" as url_reservations_crud %}
 
   <nav class="dash-nav" aria-label="Navigation">
     <a class="dash-nav-item {% if request.path == url_dashboard %}is-active{% endif %}" href="{{ url_dashboard }}">
@@ -71,10 +72,32 @@
     </a>
   </nav>
 
-  <a class="dash-btn-new" href="{{ url_offers }}#add-offer" data-open-offer-modal>
-    <span class="dash-btn-plus" aria-hidden="true">+</span>
-    Nouvelle offre
-  </a>
+  {% if request.path == url_offers %}
+    <a class="dash-btn-new" href="{{ url_offers }}#add-offer" data-open-offer-modal>
+      <span class="dash-btn-plus" aria-hidden="true">+</span>
+      Nouvelle offre
+    </a>
+  {% elif request.path == url_availability %}
+    <a class="dash-btn-new" href="{{ url_availability }}#add" data-open-availability-modal>
+      <span class="dash-btn-plus" aria-hidden="true">+</span>
+      Ajouter disponibilité
+    </a>
+  {% elif request.path == url_clients %}
+    <a class="dash-btn-new" href="{{ url_clients }}">
+      <span class="dash-btn-plus" aria-hidden="true">+</span>
+      Liste clients
+    </a>
+  {% elif request.path == url_reservations %}
+    <a class="dash-btn-new" href="{{ url_reservations_crud }}">
+      <span class="dash-btn-plus" aria-hidden="true">+</span>
+      Nouvelle réservation
+    </a>
+  {% else %}
+    <a class="dash-btn-new" href="{{ url_offers }}#add-offer" data-open-offer-modal>
+      <span class="dash-btn-plus" aria-hidden="true">+</span>
+      Action
+    </a>
+  {% endif %}
 
   <div class="dash-sidebar-bottom">
     <div class="dash-user">

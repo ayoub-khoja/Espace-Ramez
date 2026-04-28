@@ -46,6 +46,8 @@
     </div>
   </div>
 
+  {% include "portal/partials/pagination.html" %}
+
   <div
     id="availability-modal"
     style="display:none; position:fixed; inset:0; z-index:10000; background:rgba(15,23,42,0.58); padding:24px;"
@@ -65,6 +67,12 @@
       <div style="padding:18px;">
         <form method="post" class="crud-form">
           {% csrf_token %}
+
+          {% if availability_form.non_field_errors %}
+            <div class="alert alert-danger" style="margin: 0 0 14px;">
+              {{ availability_form.non_field_errors.0 }}
+            </div>
+          {% endif %}
 
           <div class="crud-grid-2">
             <div>
@@ -86,7 +94,7 @@
             <div class="crud-muted" style="margin-bottom: 8px;">
               Si tu coches des jours, on va créer ces horaires sur plusieurs jours/semaines à partir de la date.
             </div>
-            <div style="display:flex; flex-wrap:wrap; gap:10px;">
+            <div style="display:flex; flex-wrap:wrap; gap:12px;">
               {{ availability_form.repeat_days }}
             </div>
             {% if availability_form.repeat_days.errors %}<div class="form-error">{{ availability_form.repeat_days.errors.0 }}</div>{% endif %}
@@ -96,6 +104,7 @@
             <div>
               <label class="form-label">Nombre de semaines</label>
               {{ availability_form.repeat_weeks }}
+              <div class="form-help">Laisse 1 si tu ne veux pas répéter.</div>
               {% if availability_form.repeat_weeks.errors %}<div class="form-error">{{ availability_form.repeat_weeks.errors.0 }}</div>{% endif %}
             </div>
             <div></div>
@@ -119,12 +128,6 @@
             <span>Actif</span>
           </div>
           {% if availability_form.actif.errors %}<div class="form-error">{{ availability_form.actif.errors.0 }}</div>{% endif %}
-
-          {% if availability_form.non_field_errors %}
-            <div class="alert alert-danger" style="margin-top: 12px;">
-              {{ availability_form.non_field_errors.0 }}
-            </div>
-          {% endif %}
 
           <div class="crud-actions-row" style="margin-top: 14px;">
             <button type="submit" class="btn-primary">Créer</button>

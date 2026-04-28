@@ -14,19 +14,32 @@ from django.urls import reverse_lazy
 from django.utils.text import slugify
 from django.utils.decorators import method_decorator
 from django.utils import timezone
+from django.core.mail import send_mail
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.views.generic import CreateView, DeleteView, ListView, TemplateView, UpdateView
 from django import forms
+from django.core.exceptions import ValidationError
 
 from .models import Availability, Offer, Reservation, Terrain
 
 
 def _fixed_terrain() -> Terrain | None:
-    return (
-        Terrain.objects.filter(nom__iexact="Terrain-Padel-Espace-Ramez").first()
-        or Terrain.objects.order_by("nom").first()
+    preferred = "Terrain-Padel-Espace-Ramez"
+    t = Terrain.objects.filter(nom__iexact=preferred).first()
+    if t:
+        return t
+
+    t = Terrain.objects.order_by("nom").first()
+    if t:
+        return t
+
+    # Bootstrap: si aucun terrain en base, on crée le terrain par défaut.
+    t, _ = Terrain.objects.get_or_create(
+        nom=preferred,
+        defaults={"type": "Padel", "indoor": True, "prix_par_session": 45, "actif": True},
     )
+    return t
 
 
 class OfferForm(forms.ModelForm):
@@ -44,6 +57,9 @@ class OfferForm(forms.ModelForm):
         }
 
 User = get_user_model()
+
+ADMIN_LOGIN_URL = reverse_lazy("portal:admin_login")
+CLIENT_LOGIN_URL = reverse_lazy("portal:login")
 
 
 @dataclass
@@ -135,19 +151,36 @@ class ClientContactView(TemplateView):
     template_name = "portal/public/contact.html"
 
 
-@method_decorator(login_required, name="dispatch")
+@method_decorator(login_required(login_url=CLIENT_LOGIN_URL), name="dispatch")
 class ClientPanierView(TemplateView):
     template_name = "portal/public/panier.html"
 
-
-@method_decorator(login_required, name="dispatch")
-class ClientOffresView(TemplateView):
-    template_name = "portal/public/offres.html"
-
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx["offers"] = Offer.objects.filter(actif=True).order_by("-updated_at", "-created_at")
+        r = (
+            Reservation.objects.filter(client=self.request.user, statut="PENDING")
+            .select_related("terrain")
+            .order_by("-created_at")
+            .first()
+        )
+        ctx["pending_reservation"] = r
+        ctx["prefill"] = {
+            "nom": (self.request.user.get_full_name() or self.request.user.get_username() or "").strip(),
+            "email": (getattr(self.request.user, "email", "") or "").strip(),
+            "tel": "",
+        }
         return ctx
+
+
+@method_decorator(login_required(login_url=CLIENT_LOGIN_URL), name="dispatch")
+class ClientOffresView(ListView):
+    model = Offer
+    template_name = "portal/public/offres.html"
+    context_object_name = "offers"
+    paginate_by = 6
+
+    def get_queryset(self):
+        return Offer.objects.filter(actif=True).order_by("-updated_at", "-created_at")
 
 
 @require_POST
@@ -157,7 +190,7 @@ def client_logout(request):
     return redirect("portal:home")
 
 
-@login_required
+@login_required(login_url=CLIENT_LOGIN_URL)
 @require_POST
 def client_book_slot(request):
     availability_id = (request.POST.get("availability_id") or "").strip()
@@ -189,10 +222,79 @@ def client_book_slot(request):
         date=a.date,
         heure_debut=a.heure_debut,
         heure_fin=a.heure_fin,
-        statut="CONFIRMED",
+        statut="PENDING",
     )
-    messages.success(request, "Réservation confirmée.")
+    messages.success(request, "Créneau ajouté au panier. Confirmez pour finaliser.")
     return redirect("portal:client_panier")
+
+
+@login_required(login_url=CLIENT_LOGIN_URL)
+@require_POST
+def client_confirm_reservation(request):
+    r = (
+        Reservation.objects.filter(client=request.user, statut="PENDING")
+        .select_related("terrain")
+        .order_by("-created_at")
+        .first()
+    )
+    if not r:
+        messages.error(request, "Aucune réservation en attente.")
+        return redirect("portal:client_panier")
+
+    nom = (request.POST.get("nom") or "").strip()
+    email = (request.POST.get("email") or "").strip()
+    tel = (request.POST.get("tel") or "").strip()
+
+    if not nom:
+        messages.error(request, "Veuillez renseigner votre nom.")
+        return redirect("portal:client_panier")
+    if not email or "@" not in email:
+        messages.error(request, "Veuillez renseigner un e-mail valide.")
+        return redirect("portal:client_panier")
+
+    # Vérifie que le créneau n'a pas été pris entre-temps
+    overlap_exists = (
+        Reservation.objects.filter(
+            terrain=r.terrain,
+            date=r.date,
+        )
+        .exclude(pk=r.pk)
+        .exclude(statut="CANCELLED")
+        .filter(heure_debut__lt=r.heure_fin, heure_fin__gt=r.heure_debut)
+        .exists()
+    )
+    if overlap_exists:
+        r.statut = "CANCELLED"
+        r.save(update_fields=["statut"])
+        messages.error(request, "Ce créneau n'est plus disponible. Veuillez choisir un autre horaire.")
+        return redirect("portal:client_reservation")
+
+    r.contact_nom = nom
+    r.contact_email = email
+    r.contact_tel = tel
+    r.statut = "CONFIRMED"
+    r.confirmed_at = timezone.now()
+    r.save(update_fields=["contact_nom", "contact_email", "contact_tel", "statut", "confirmed_at"])
+
+    # Email confirmation
+    subject = "Confirmation de réservation — Espace Ramez"
+    body = (
+        f"Bonjour {nom},\n\n"
+        f"Votre réservation est confirmée.\n\n"
+        f"Terrain: {r.terrain.nom}\n"
+        f"Date: {r.date}\n"
+        f"Heure: {r.heure_debut.strftime('%H:%M')} - {r.heure_fin.strftime('%H:%M')}\n\n"
+        f"Merci,\nEspace Ramez"
+    )
+    try:
+        send_mail(subject, body, None, [email], fail_silently=False)
+    except Exception:
+        # On ne bloque pas la confirmation si l'email échoue.
+        messages.warning(request, "Réservation confirmée, mais l'envoi de l'e-mail a échoué. Vérifiez la configuration SMTP.")
+    else:
+        messages.success(request, "Réservation confirmée. Un e-mail de confirmation a été envoyé.")
+
+    return redirect("portal:home")
 
 
 class PortalLoginView(LoginView):
@@ -300,7 +402,7 @@ class PortalLogoutView(LogoutView):
     next_page = reverse_lazy("portal:admin_login")
 
 
-@method_decorator(login_required, name="dispatch")
+@method_decorator(login_required(login_url=ADMIN_LOGIN_URL), name="dispatch")
 class DashboardView(TemplateView):
     """Vue — tableau de bord après authentification."""
 
@@ -321,7 +423,7 @@ class DashboardView(TemplateView):
 # -----------------------
 
 
-@method_decorator(login_required, name="dispatch")
+@method_decorator(login_required(login_url=ADMIN_LOGIN_URL), name="dispatch")
 class TerrainListView(ListView):
     model = Terrain
     template_name = "portal/crud/terrain_list.html"
@@ -336,7 +438,7 @@ class TerrainListView(ListView):
         return qs
 
 
-@method_decorator(login_required, name="dispatch")
+@method_decorator(login_required(login_url=ADMIN_LOGIN_URL), name="dispatch")
 class TerrainCreateView(CreateView):
     model = Terrain
     fields = ["nom", "type", "indoor", "prix_par_session", "actif"]
@@ -344,7 +446,7 @@ class TerrainCreateView(CreateView):
     success_url = reverse_lazy("portal:terrain_list")
 
 
-@method_decorator(login_required, name="dispatch")
+@method_decorator(login_required(login_url=ADMIN_LOGIN_URL), name="dispatch")
 class TerrainUpdateView(UpdateView):
     model = Terrain
     fields = ["nom", "type", "indoor", "prix_par_session", "actif"]
@@ -352,7 +454,7 @@ class TerrainUpdateView(UpdateView):
     success_url = reverse_lazy("portal:terrain_list")
 
 
-@method_decorator(login_required, name="dispatch")
+@method_decorator(login_required(login_url=ADMIN_LOGIN_URL), name="dispatch")
 class TerrainDeleteView(DeleteView):
     model = Terrain
     template_name = "portal/crud/terrain_confirm_delete.html"
@@ -364,7 +466,7 @@ class TerrainDeleteView(DeleteView):
 # ---------------------------
 
 
-@method_decorator(login_required, name="dispatch")
+@method_decorator(login_required(login_url=ADMIN_LOGIN_URL), name="dispatch")
 class ReservationListView(ListView):
     model = Reservation
     template_name = "portal/crud/reservation_list.html"
@@ -379,7 +481,7 @@ class ReservationListView(ListView):
         return qs
 
 
-@method_decorator(login_required, name="dispatch")
+@method_decorator(login_required(login_url=ADMIN_LOGIN_URL), name="dispatch")
 class ReservationCreateView(CreateView):
     model = Reservation
     fields = ["terrain", "client", "date", "heure_debut", "heure_fin", "statut"]
@@ -387,7 +489,7 @@ class ReservationCreateView(CreateView):
     success_url = reverse_lazy("portal:reservation_list")
 
 
-@method_decorator(login_required, name="dispatch")
+@method_decorator(login_required(login_url=ADMIN_LOGIN_URL), name="dispatch")
 class ReservationUpdateView(UpdateView):
     model = Reservation
     fields = ["terrain", "client", "date", "heure_debut", "heure_fin", "statut"]
@@ -395,71 +497,52 @@ class ReservationUpdateView(UpdateView):
     success_url = reverse_lazy("portal:reservation_list")
 
 
-@method_decorator(login_required, name="dispatch")
+@method_decorator(login_required(login_url=ADMIN_LOGIN_URL), name="dispatch")
 class ReservationDeleteView(DeleteView):
     model = Reservation
     template_name = "portal/crud/reservation_confirm_delete.html"
     success_url = reverse_lazy("portal:reservation_list")
 
 
-@method_decorator(login_required, name="dispatch")
-class ReservationsAdminView(TemplateView):
-    """Vue — écran admin des réservations (template MVT)."""
+@method_decorator(login_required(login_url=ADMIN_LOGIN_URL), name="dispatch")
+class ReservationsAdminView(ListView):
+    """Vue — écran admin des réservations (dynamique)."""
 
+    model = Reservation
     template_name = "portal/reservations.html"
+    context_object_name = "reservations_qs"
+    paginate_by = 20
+
+    def get_queryset(self):
+        qs = super().get_queryset().select_related("terrain", "client")
+
+        q = (self.request.GET.get("q") or "").strip()
+        if q:
+            qs = qs.filter(client__username__icontains=q) | qs.filter(client__email__icontains=q) | qs.filter(terrain__nom__icontains=q)
+
+        date_s = (self.request.GET.get("date") or "").strip()
+        if date_s:
+            qs = qs.filter(date=date_s)
+
+        statut = (self.request.GET.get("statut") or "").strip().upper()
+        if statut in {"CONFIRMED", "IN_PROGRESS", "PENDING", "CANCELLED"}:
+            qs = qs.filter(statut=statut)
+
+        return qs.order_by("-date", "-heure_debut", "-created_at")
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
+        today = timezone.localdate()
         ctx["kpis"] = {
-            "today_bookings": 42,
-            "active_courts": "08",
+            "today_bookings": Reservation.objects.filter(date=today).exclude(statut="CANCELLED").count(),
+            "active_courts": Terrain.objects.filter(actif=True).count(),
         }
-        ctx["reservations"] = [
-            {
-                "when_title": "Today, Oct 24",
-                "when_sub": "10:00 AM - 11:30 AM",
-                "court": "Court 01",
-                "court_sub": "PREMIUM INDOOR",
-                "accent": "blue",
-                "client_initials": "JD",
-                "client_name": "Julianna Duarte",
-                "status": "CONFIRMED",
-                "status_style": "ok",
-            },
-            {
-                "when_title": "Today, Oct 24",
-                "when_sub": "11:30 AM - 01:00 PM",
-                "court": "Court 04",
-                "court_sub": "PANORAMIC GLASS",
-                "accent": "amber",
-                "client_initials": "RK",
-                "client_name": "Robert Kallis",
-                "status": "IN-PROGRESS",
-                "status_style": "live",
-            },
-            {
-                "when_title": "Tomorrow, Oct 25",
-                "when_sub": "08:00 AM - 08:30 AM",
-                "court": "Court 02",
-                "court_sub": "PREMIUM INDOOR",
-                "accent": "blue",
-                "client_initials": "SM",
-                "client_name": "Sarah Millstone",
-                "status": "PENDING",
-                "status_style": "warn",
-            },
-            {
-                "when_title": "Tomorrow, Oct 25",
-                "when_sub": "10:00 AM - 12:00 PM",
-                "court": "Court 07",
-                "court_sub": "STANDARD OUTDOOR",
-                "accent": "violet",
-                "client_initials": "TC",
-                "client_name": "Thomas Chen",
-                "status": "CANCELLED",
-                "status_style": "danger",
-            },
-        ]
+        ctx["today"] = today
+        ctx["filters"] = {
+            "q": (self.request.GET.get("q") or "").strip(),
+            "date": (self.request.GET.get("date") or "").strip(),
+            "statut": (self.request.GET.get("statut") or "").strip(),
+        }
         return ctx
 
 
@@ -470,7 +553,7 @@ class OffersAdminView(TemplateView):
     template_name = "portal/offers_admin.html"
 
 
-@method_decorator(login_required, name="dispatch")
+@method_decorator(login_required(login_url=ADMIN_LOGIN_URL), name="dispatch")
 class OfferListView(ListView):
     model = Offer
     template_name = "portal/crud/offer_list.html"
@@ -503,7 +586,7 @@ class OfferListView(ListView):
         return self.render_to_response(context, status=400)
 
 
-@method_decorator(login_required, name="dispatch")
+@method_decorator(login_required(login_url=ADMIN_LOGIN_URL), name="dispatch")
 class OfferCreateView(CreateView):
     model = Offer
     fields = ["titre", "badge", "remise_percent", "description", "conditions_titre", "conditions", "media", "actif"]
@@ -511,7 +594,7 @@ class OfferCreateView(CreateView):
     success_url = reverse_lazy("portal:offer_list")
 
 
-@method_decorator(login_required, name="dispatch")
+@method_decorator(login_required(login_url=ADMIN_LOGIN_URL), name="dispatch")
 class OfferUpdateView(UpdateView):
     model = Offer
     fields = ["titre", "badge", "remise_percent", "description", "conditions_titre", "conditions", "media", "actif"]
@@ -519,14 +602,14 @@ class OfferUpdateView(UpdateView):
     success_url = reverse_lazy("portal:offer_list")
 
 
-@method_decorator(login_required, name="dispatch")
+@method_decorator(login_required(login_url=ADMIN_LOGIN_URL), name="dispatch")
 class OfferDeleteView(DeleteView):
     model = Offer
     template_name = "portal/crud/offer_confirm_delete.html"
     success_url = reverse_lazy("portal:offer_list")
 
 
-@method_decorator(login_required, name="dispatch")
+@method_decorator(login_required(login_url=ADMIN_LOGIN_URL), name="dispatch")
 class ClientListView(ListView):
     model = User
     template_name = "portal/crud/client_list.html"
@@ -594,8 +677,18 @@ class AvailabilityForm(forms.ModelForm):
             return self._fixed_terrain
         return self.cleaned_data["terrain"]
 
+    def clean(self):
+        cleaned = super().clean()
+        hd = cleaned.get("heure_debut")
+        hf = cleaned.get("heure_fin")
+        if hd and hf and hf <= hd:
+            # Erreur claire côté formulaire (au lieu de la contrainte DB).
+            self.add_error("heure_fin", "L'heure de fin doit être après l'heure de début.")
+            raise ValidationError("Horaires invalides.")
+        return cleaned
 
-@method_decorator(login_required, name="dispatch")
+
+@method_decorator(login_required(login_url=ADMIN_LOGIN_URL), name="dispatch")
 class AvailabilityListView(ListView):
     model = Availability
     template_name = "portal/crud/availability_list.html"
@@ -662,7 +755,7 @@ class AvailabilityListView(ListView):
         return self.render_to_response(context, status=400)
 
 
-@method_decorator(login_required, name="dispatch")
+@method_decorator(login_required(login_url=ADMIN_LOGIN_URL), name="dispatch")
 class AvailabilityCreateView(CreateView):
     model = Availability
     form_class = AvailabilityForm
@@ -670,7 +763,7 @@ class AvailabilityCreateView(CreateView):
     success_url = reverse_lazy("portal:availability_list")
 
 
-@method_decorator(login_required, name="dispatch")
+@method_decorator(login_required(login_url=ADMIN_LOGIN_URL), name="dispatch")
 class AvailabilityUpdateView(UpdateView):
     model = Availability
     form_class = AvailabilityForm
@@ -678,7 +771,7 @@ class AvailabilityUpdateView(UpdateView):
     success_url = reverse_lazy("portal:availability_list")
 
 
-@method_decorator(login_required, name="dispatch")
+@method_decorator(login_required(login_url=ADMIN_LOGIN_URL), name="dispatch")
 class AvailabilityDeleteView(DeleteView):
     model = Availability
     template_name = "portal/crud/availability_confirm_delete.html"

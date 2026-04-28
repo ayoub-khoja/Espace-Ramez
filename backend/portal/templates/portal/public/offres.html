@@ -67,6 +67,32 @@
             {% endfor %}
           </div>
 
+          {% if page_obj and paginator and paginator.num_pages > 1 %}
+            <div class="mt-8 flex items-center justify-between gap-3">
+              <p class="text-sm text-zinc-600">
+                Page <span class="font-semibold text-[#0a1f3d]">{{ page_obj.number }}</span> / {{ paginator.num_pages }}
+              </p>
+              <div class="flex gap-2">
+                {% if page_obj.has_previous %}
+                  <a
+                    class="inline-flex h-10 items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 text-sm font-semibold text-[#0a1f3d] hover:bg-zinc-50"
+                    href="?page={{ page_obj.previous_page_number }}&{% for k,v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}"
+                  >
+                    ← Précédent
+                  </a>
+                {% endif %}
+                {% if page_obj.has_next %}
+                  <a
+                    class="inline-flex h-10 items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 text-sm font-semibold text-[#0a1f3d] hover:bg-zinc-50"
+                    href="?page={{ page_obj.next_page_number }}&{% for k,v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}"
+                  >
+                    Suivant →
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+          {% endif %}
+
           <div class="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div class="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-4 text-sm text-zinc-600 sm:px-5">
               Astuce : ajoutez un pack au panier avant de confirmer une réservation.

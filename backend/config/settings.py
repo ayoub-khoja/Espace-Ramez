@@ -124,6 +124,19 @@ TIME_ZONE = "Africa/Tunis"
 USE_I18N = True
 USE_TZ = True
 
+# Email (confirmation réservation)
+# En dev: affichage dans la console si aucun SMTP n'est fourni.
+EMAIL_BACKEND = os.environ.get(
+    "DJANGO_EMAIL_BACKEND",
+    "django.core.mail.backends.console.EmailBackend" if DEBUG else "django.core.mail.backends.smtp.EmailBackend",
+)
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "1") in {"1", "true", "True", "yes", "on"}
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "no-reply@espaceramez.tn")
+
 STATIC_URL = "/static/"
 # Required for collectstatic (Render)
 STATIC_ROOT = BASE_DIR / "staticfiles"
@@ -145,9 +158,11 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-LOGIN_URL = "portal:admin_login"
-LOGIN_REDIRECT_URL = "portal:dashboard"
-LOGOUT_REDIRECT_URL = "portal:admin_login"
+# Par défaut, les pages "client" redirigent vers /login/
+# (les pages admin utilisent un login_url spécifique dans les décorateurs).
+LOGIN_URL = "portal:login"
+LOGIN_REDIRECT_URL = "portal:home"
+LOGOUT_REDIRECT_URL = "portal:home"
 
 # Connexion avec « admin » ou « admin@espaceramez.tn » dans le champ identifiant
 AUTHENTICATION_BACKENDS = [

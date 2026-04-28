@@ -12,6 +12,7 @@ urlpatterns = [
     path("reservation/book/", views.client_book_slot, name="client_book_slot"),
     path("contact/", views.ClientContactView.as_view(), name="client_contact"),
     path("panier/", views.ClientPanierView.as_view(), name="client_panier"),
+    path("panier/confirmer/", views.client_confirm_reservation, name="client_confirm_reservation"),
     path("offres/", views.ClientOffresView.as_view(), name="client_offres"),
     # Login client (public)
     path("login/", views.ClientLoginView.as_view(), name="login"),

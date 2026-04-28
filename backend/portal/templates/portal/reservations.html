@@ -33,17 +33,35 @@
             <path d="M16.5 16.5 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
           </svg>
         </span>
-        <input class="res-input" placeholder="Rechercher par client, terrain ou identifiant…" />
+        <form method="get">
+          <input
+            class="res-input"
+            name="q"
+            value="{{ filters.q }}"
+            placeholder="Rechercher par client, terrain ou e-mail…"
+          />
+        </form>
       </div>
       <div class="res-filters">
-        <button type="button" class="res-pill">
+        <a class="res-pill" href="?{% if filters.q %}q={{ filters.q|urlencode }}&{% endif %}{% if filters.date %}date={{ filters.date|urlencode }}&{% endif %}statut=">
           <span class="res-pill-ico" aria-hidden="true">≡</span>
-          Statut : <strong>Tous</strong>
-        </button>
-        <button type="button" class="res-pill">
+          Statut : <strong>{% if filters.statut %}{{ filters.statut }}{% else %}Tous{% endif %}</strong>
+        </a>
+        <form method="get">
+          {% if filters.q %}<input type="hidden" name="q" value="{{ filters.q }}">{% endif %}
+          {% if filters.statut %}<input type="hidden" name="statut" value="{{ filters.statut }}">{% endif %}
           <span class="res-pill-ico" aria-hidden="true">📅</span>
-          Date : <strong>Aujourd’hui</strong>
-        </button>
+          Date :
+          <strong>
+            <input
+              name="date"
+              type="date"
+              value="{% if filters.date %}{{ filters.date }}{% else %}{{ today|date:'Y-m-d' }}{% endif %}"
+              style="border:0; background:transparent; font:inherit; font-weight:900; padding:0; color:inherit;"
+              onchange="this.form.submit()"
+            />
+          </strong>
+        </form>
         <button type="button" class="res-btn-icon" aria-label="Export">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
             <path d="M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -63,24 +81,34 @@
         <div class="is-right">Actions</div>
       </div>
 
-      {% for r in reservations %}
+      {% for r in reservations_qs %}
       <div class="res-row">
         <div class="res-when">
-          <div class="res-when-title">{{ r.when_title }}</div>
-          <div class="res-when-sub">{{ r.when_sub }}</div>
+          <div class="res-when-title">{{ r.date|date:"D d M Y" }}</div>
+          <div class="res-when-sub">{{ r.heure_debut|time:"H:i" }} - {{ r.heure_fin|time:"H:i" }}</div>
         </div>
         <div class="res-court">
-          <span class="res-accent res-accent-{{ r.accent }}" aria-hidden="true"></span>
+          <span class="res-accent res-accent-blue" aria-hidden="true"></span>
           <div>
-            <div class="res-court-title">{{ r.court }}</div>
-            <div class="res-court-sub">{{ r.court_sub }}</div>
+            <div class="res-court-title">{{ r.terrain.nom }}</div>
+            <div class="res-court-sub">{% if r.terrain.indoor %}INTÉRIEUR{% else %}EXTÉRIEUR{% endif %}</div>
           </div>
         </div>
         <div class="res-client">
-          <span class="res-client-badge">{{ r.client_initials }}</span>
-          <span class="res-client-name">{{ r.client_name }}</span>
+          <span class="res-client-badge">{{ r.client.get_username|slice:":2"|upper }}</span>
+          <span class="res-client-name">{{ r.client.get_full_name|default:r.client.get_username }}</span>
         </div>
-        <div><span class="tag tag-{{ r.status_style }}">{{ r.status }}</span></div>
+        <div>
+          {% if r.statut == "CONFIRMED" %}
+            <span class="tag tag-ok">CONFIRMÉ</span>
+          {% elif r.statut == "IN_PROGRESS" %}
+            <span class="tag tag-live">EN COURS</span>
+          {% elif r.statut == "PENDING" %}
+            <span class="tag tag-warn">EN ATTENTE</span>
+          {% else %}
+            <span class="tag tag-danger">ANNULÉ</span>
+          {% endif %}
+        </div>
         <div class="is-right">
           <button type="button" class="res-action" aria-label="Edit">✎</button>
           <button type="button" class="res-action" aria-label="More">⋯</button>
@@ -89,14 +117,17 @@
       {% endfor %}
 
       <div class="res-footer">
-        <div class="res-foot-left">Affichage : 4 sur 128 réservations</div>
+        <div class="res-foot-left">
+          Affichage : {{ page_obj.start_index }}-{{ page_obj.end_index }} sur {{ paginator.count }} réservations
+        </div>
         <div class="res-pager" aria-label="Pagination">
-          <button type="button" class="page-btn is-active">1</button>
-          <button type="button" class="page-btn">2</button>
-          <button type="button" class="page-btn">3</button>
-          <span class="page-ellipsis">…</span>
-          <button type="button" class="page-btn">12</button>
-          <button type="button" class="page-btn">›</button>
+          {% if page_obj.has_previous %}
+            <a class="page-btn" href="?page={{ page_obj.previous_page_number }}&{% for k,v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}">‹</a>
+          {% endif %}
+          <span class="page-btn is-active">{{ page_obj.number }}</span>
+          {% if page_obj.has_next %}
+            <a class="page-btn" href="?page={{ page_obj.next_page_number }}&{% for k,v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}">›</a>
+          {% endif %}
         </div>
       </div>
     </section>

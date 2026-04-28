@@ -1,0 +1,29 @@
+{% if page_obj and paginator and paginator.num_pages > 1 %}
+  <div class="crud-pager" aria-label="Pagination">
+    <span>
+      Page <strong>{{ page_obj.number }}</strong> / {{ paginator.num_pages }}
+      — Total: {{ paginator.count }}
+    </span>
+
+    <div class="crud-actions-inline">
+      {% if page_obj.has_previous %}
+        <a
+          class="btn-small"
+          href="?page={{ page_obj.previous_page_number }}&{% for k,v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}"
+        >
+          ← Précédent
+        </a>
+      {% endif %}
+
+      {% if page_obj.has_next %}
+        <a
+          class="btn-small"
+          href="?page={{ page_obj.next_page_number }}&{% for k,v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}"
+        >
+          Suivant →
+        </a>
+      {% endif %}
+    </div>
+  </div>
+{% endif %}
+

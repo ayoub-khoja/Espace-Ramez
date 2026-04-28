@@ -67,15 +67,13 @@
             </nav>
 
             {% if request.user.is_authenticated %}
-              <form method="post" action="{% url 'portal:client_logout' %}">
-                {% csrf_token %}
-                <button
-                  type="submit"
-                  class="relative z-50 inline-flex h-9 shrink-0 items-center justify-center rounded-xl bg-[#0a1f3d] px-3.5 text-sm font-medium text-white transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--accent,#2563EB),transparent_55%)] sm:h-11 sm:px-5"
-                >
-                  Déconnexion
-                </button>
-              </form>
+              <button
+                type="button"
+                data-client-logout
+                class="relative z-50 inline-flex h-9 shrink-0 items-center justify-center rounded-xl bg-[#0a1f3d] px-3.5 text-sm font-medium text-white transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--accent,#2563EB),transparent_55%)] sm:h-11 sm:px-5"
+              >
+                Déconnexion
+              </button>
             {% else %}
               <a
                 href="/login/"
@@ -119,6 +117,26 @@
     </div>
 
     {% block extra_js %}{% endblock %}
+
+    <script>
+      (function () {
+        const btn = document.querySelector("[data-client-logout]");
+        if (!btn) return;
+        btn.addEventListener("click", async function () {
+          btn.disabled = true;
+          try {
+            await fetch("{% url 'portal:api_auth_logout' %}", {
+              method: "POST",
+              credentials: "include",
+              headers: { "Content-Type": "application/json" },
+              body: "{}",
+            });
+          } finally {
+            window.location.href = "{% url 'portal:home' %}";
+          }
+        });
+      })();
+    </script>
   </body>
 </html>
 

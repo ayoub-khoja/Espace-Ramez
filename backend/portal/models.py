@@ -37,6 +37,10 @@ class Reservation(models.Model):
     heure_debut = models.TimeField()
     heure_fin = models.TimeField()
     statut = models.CharField(max_length=20, choices=STATUS_CHOICES, default="PENDING")
+    contact_nom = models.CharField(max_length=160, blank=True, default="")
+    contact_email = models.EmailField(blank=True, default="")
+    contact_tel = models.CharField(max_length=40, blank=True, default="")
+    confirmed_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
