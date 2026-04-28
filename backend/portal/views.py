@@ -693,10 +693,10 @@ class AvailabilityListView(ListView):
     model = Availability
     template_name = "portal/crud/availability_list.html"
     context_object_name = "items"
-    paginate_by = 30
+    paginate_by = 10
 
     def get_queryset(self):
-        qs = super().get_queryset().select_related("terrain")
+        qs = super().get_queryset().select_related("terrain").order_by("-date", "-heure_debut", "-pk")
         terrain_id = (self.request.GET.get("terrain") or "").strip()
         date_s = (self.request.GET.get("date") or "").strip()
         if terrain_id.isdigit():
