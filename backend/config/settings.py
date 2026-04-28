@@ -131,10 +131,17 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 _FRONTEND_PUBLIC = BASE_DIR.parent / "frontend" / "public"
 STATICFILES_DIRS = [_FRONTEND_PUBLIC] if _FRONTEND_PUBLIC.is_dir() else []
 
-# Serve static files in production (Render)
+# Storages (Django >= 4.2)
 STORAGES = {
+    # Uploads (MEDIA)
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    # Static files (Render/production)
     "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
 }
+
+# Media uploads (images/vidéos offres)
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

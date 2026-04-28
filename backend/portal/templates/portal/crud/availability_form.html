@@ -1,0 +1,57 @@
+{% extends "portal/crud/base_crud.html" %}
+
+{% block title %}Disponibilité{% endblock %}
+{% block page_title %}{% if object %}Modifier une disponibilité{% else %}Ajouter une disponibilité{% endif %}{% endblock %}
+
+{% block page_actions %}
+  <a class="btn-tertiary" href="{% url 'portal:availability_list' %}">Retour</a>
+{% endblock %}
+
+{% block page_content %}
+  <div class="crud-card crud-card-pad">
+    <form method="post" class="crud-form">
+      {% csrf_token %}
+
+      <div class="crud-grid-2">
+        <div>
+          <label class="form-label" for="{{ form.terrain.id_for_label }}">Terrain</label>
+          {{ form.terrain }}
+          {% if form.terrain.errors %}<div class="form-error">{{ form.terrain.errors.0 }}</div>{% endif %}
+        </div>
+        <div>
+          <label class="form-label" for="{{ form.date.id_for_label }}">Date</label>
+          {{ form.date }}
+          {% if form.date.errors %}<div class="form-error">{{ form.date.errors.0 }}</div>{% endif %}
+        </div>
+      </div>
+
+      <div class="crud-grid-2">
+        <div>
+          <label class="form-label" for="{{ form.heure_debut.id_for_label }}">Heure début</label>
+          {{ form.heure_debut }}
+          {% if form.heure_debut.errors %}<div class="form-error">{{ form.heure_debut.errors.0 }}</div>{% endif %}
+        </div>
+        <div>
+          <label class="form-label" for="{{ form.heure_fin.id_for_label }}">Heure fin</label>
+          {{ form.heure_fin }}
+          {% if form.heure_fin.errors %}<div class="form-error">{{ form.heure_fin.errors.0 }}</div>{% endif %}
+        </div>
+      </div>
+
+      <div class="trust-row">
+        {{ form.actif }}
+        <span>Actif</span>
+      </div>
+      {% if form.actif.errors %}<div class="form-error">{{ form.actif.errors.0 }}</div>{% endif %}
+
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger">{{ form.non_field_errors.0 }}</div>
+      {% endif %}
+
+      <div class="crud-actions-row">
+        <button class="btn-primary" type="submit">{% if object %}Enregistrer{% else %}Créer{% endif %}</button>
+      </div>
+    </form>
+  </div>
+{% endblock %}
+

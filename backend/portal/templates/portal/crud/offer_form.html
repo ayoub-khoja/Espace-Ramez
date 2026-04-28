@@ -1,0 +1,85 @@
+{% extends "portal/crud/base_crud.html" %}
+
+{% block title %}CRUD — Offre{% endblock %}
+{% block page_title %}{% if object %}Modifier une offre{% else %}Ajouter une offre{% endif %}{% endblock %}
+
+{% block page_actions %}
+  <a class="btn-tertiary" href="{% url 'portal:offer_list' %}">Retour</a>
+{% endblock %}
+
+{% block page_content %}
+  <div class="crud-card crud-card-pad">
+    <form class="crud-form" method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <div class="crud-grid-2">
+        <div>
+          <label class="form-label" for="{{ form.titre.id_for_label }}">Titre</label>
+          {{ form.titre }}
+          {% if form.titre.errors %}<div class="form-error">{{ form.titre.errors.0 }}</div>{% endif %}
+        </div>
+        <div>
+          <label class="form-label" for="{{ form.badge.id_for_label }}">Badge</label>
+          {{ form.badge }}
+          <div class="form-help">Ex: Matin, Campus, VIP…</div>
+          {% if form.badge.errors %}<div class="form-error">{{ form.badge.errors.0 }}</div>{% endif %}
+        </div>
+      </div>
+
+      <div class="crud-grid-2">
+        <div>
+          <label class="form-label" for="{{ form.remise_percent.id_for_label }}">Remise (%)</label>
+          {{ form.remise_percent }}
+          <div class="form-help">Optionnel. Ex: 12 pour -12%.</div>
+          {% if form.remise_percent.errors %}<div class="form-error">{{ form.remise_percent.errors.0 }}</div>{% endif %}
+        </div>
+        <div>
+          <label class="form-label" for="{{ form.actif.id_for_label }}">Actif</label>
+          <div class="trust-row">
+            {{ form.actif }}
+            <span>Afficher cette offre côté client</span>
+          </div>
+          {% if form.actif.errors %}<div class="form-error">{{ form.actif.errors.0 }}</div>{% endif %}
+        </div>
+      </div>
+
+      <div>
+        <label class="form-label" for="{{ form.description.id_for_label }}">Description</label>
+        {{ form.description }}
+        {% if form.description.errors %}<div class="form-error">{{ form.description.errors.0 }}</div>{% endif %}
+      </div>
+
+      <div class="crud-grid-2">
+        <div>
+          <label class="form-label" for="{{ form.conditions_titre.id_for_label }}">Titre conditions</label>
+          {{ form.conditions_titre }}
+          {% if form.conditions_titre.errors %}<div class="form-error">{{ form.conditions_titre.errors.0 }}</div>{% endif %}
+        </div>
+        <div>
+          <label class="form-label" for="{{ form.conditions.id_for_label }}">Conditions</label>
+          {{ form.conditions }}
+          <div class="form-help">Ex: Annulation flexible · Support 7j/7</div>
+          {% if form.conditions.errors %}<div class="form-error">{{ form.conditions.errors.0 }}</div>{% endif %}
+        </div>
+      </div>
+
+      <div>
+        <label class="form-label" for="{{ form.media.id_for_label }}">Image / vidéo</label>
+        {{ form.media }}
+        <div class="form-help">Formats recommandés: .jpg/.png ou .mp4/.webm</div>
+        {% if object and object.media %}
+          <div class="form-help">Fichier actuel: <a href="{{ object.media.url }}" target="_blank" rel="noreferrer">{{ object.media.name }}</a></div>
+        {% endif %}
+        {% if form.media.errors %}<div class="form-error">{{ form.media.errors.0 }}</div>{% endif %}
+      </div>
+
+      <div class="crud-actions-row">
+        <button class="btn-primary" type="submit">{% if object %}Enregistrer{% else %}Créer{% endif %}</button>
+        {% if object %}
+          <a class="btn-secondary" href="{% url 'portal:offer_delete' object.pk %}">Supprimer</a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+{% endblock %}
+

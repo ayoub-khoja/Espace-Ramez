@@ -1,0 +1,23 @@
+{% extends "portal/crud/base_crud.html" %}
+
+{% block title %}Supprimer — Offre{% endblock %}
+{% block page_title %}Supprimer l’offre{% endblock %}
+
+{% block page_actions %}
+  <a class="btn-tertiary" href="{% url 'portal:offer_list' %}">Retour</a>
+{% endblock %}
+
+{% block page_content %}
+  <div class="crud-card crud-card-pad">
+    <div class="alert alert-warn">
+      Confirmer la suppression de <strong>{{ object.titre }}</strong> ?
+    </div>
+
+    <form method="post" class="crud-actions-row" style="margin-top: 1rem;">
+      {% csrf_token %}
+      <button type="submit" class="btn-danger">Oui, supprimer</button>
+      <a class="btn-secondary" href="{% url 'portal:offer_list' %}">Annuler</a>
+    </form>
+  </div>
+{% endblock %}
+

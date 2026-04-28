@@ -29,38 +29,42 @@
           </p>
 
           <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div class="group rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
-              <div class="flex items-start justify-between gap-3">
-                <p class="text-base font-bold tracking-tight text-[#0a1f3d]">Pack 10 séances</p>
-                <span class="rounded-full bg-[#EBF2FF] px-2.5 py-1 text-[11px] font-bold text-[#0a1f3d] ring-1 ring-[#0a1f3d]/10">-12%</span>
-              </div>
-              <p class="mt-3 text-sm leading-relaxed text-zinc-600">Économisez 12% sur vos réservations. Valable 60 jours.</p>
-              <div class="mt-5 h-px w-full bg-zinc-100"></div>
-              <p class="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">Conditions premium</p>
-              <p class="mt-2 text-sm font-medium text-zinc-600">Annulation flexible · Support 7j/7</p>
-            </div>
+            {% for o in offers %}
+              <div class="group overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
+                {% if o.media %}
+                  {% with lower=o.media.name|lower %}
+                    {% if lower|slice:"-4:" == ".mp4" or lower|slice:"-5:" == ".webm" %}
+                      <video class="h-40 w-full object-cover" src="{{ o.media.url }}" controls muted playsinline></video>
+                    {% else %}
+                      <img class="h-40 w-full object-cover" src="{{ o.media.url }}" alt="{{ o.titre }}" />
+                    {% endif %}
+                  {% endwith %}
+                {% endif %}
 
-            <div class="group rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
-              <div class="flex items-start justify-between gap-3">
-                <p class="text-base font-bold tracking-tight text-[#0a1f3d]">Happy hours</p>
-                <span class="rounded-full bg-[#EBF2FF] px-2.5 py-1 text-[11px] font-bold text-[#0a1f3d] ring-1 ring-[#0a1f3d]/10">Matin</span>
+                <div class="p-6">
+                  <div class="flex items-start justify-between gap-3">
+                    <p class="text-base font-bold tracking-tight text-[#0a1f3d]">{{ o.titre }}</p>
+                    {% if o.remise_percent %}
+                      <span class="rounded-full bg-[#EBF2FF] px-2.5 py-1 text-[11px] font-bold text-[#0a1f3d] ring-1 ring-[#0a1f3d]/10">-{{ o.remise_percent }}%</span>
+                    {% elif o.badge %}
+                      <span class="rounded-full bg-[#EBF2FF] px-2.5 py-1 text-[11px] font-bold text-[#0a1f3d] ring-1 ring-[#0a1f3d]/10">{{ o.badge }}</span>
+                    {% endif %}
+                  </div>
+                  {% if o.description %}
+                    <p class="mt-3 text-sm leading-relaxed text-zinc-600">{{ o.description }}</p>
+                  {% endif %}
+                  <div class="mt-5 h-px w-full bg-zinc-100"></div>
+                  <p class="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">{{ o.conditions_titre|default:"Conditions" }}</p>
+                  <p class="mt-2 text-sm font-medium text-zinc-600">
+                    {% if o.conditions %}{{ o.conditions }}{% else %}<span class="text-zinc-400">—</span>{% endif %}
+                  </p>
+                </div>
               </div>
-              <p class="mt-3 text-sm leading-relaxed text-zinc-600">Réductions sur les créneaux 07:00–11:00 en semaine.</p>
-              <div class="mt-5 h-px w-full bg-zinc-100"></div>
-              <p class="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">Conditions premium</p>
-              <p class="mt-2 text-sm font-medium text-zinc-600">Annulation flexible · Support 7j/7</p>
-            </div>
-
-            <div class="group rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
-              <div class="flex items-start justify-between gap-3">
-                <p class="text-base font-bold tracking-tight text-[#0a1f3d]">Étudiants</p>
-                <span class="rounded-full bg-[#EBF2FF] px-2.5 py-1 text-[11px] font-bold text-[#0a1f3d] ring-1 ring-[#0a1f3d]/10">Campus</span>
+            {% empty %}
+              <div class="rounded-2xl border border-zinc-200 bg-zinc-50 px-5 py-5 text-sm text-zinc-600 sm:col-span-2 lg:col-span-3">
+                Aucune offre disponible pour le moment.
               </div>
-              <p class="mt-3 text-sm leading-relaxed text-zinc-600">Tarif préférentiel sur présentation d’une carte valide.</p>
-              <div class="mt-5 h-px w-full bg-zinc-100"></div>
-              <p class="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">Conditions premium</p>
-              <p class="mt-2 text-sm font-medium text-zinc-600">Annulation flexible · Support 7j/7</p>
-            </div>
+            {% endfor %}
           </div>
 
           <div class="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

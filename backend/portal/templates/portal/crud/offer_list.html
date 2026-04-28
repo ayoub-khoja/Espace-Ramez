@@ -1,0 +1,199 @@
+{% extends "portal/crud/base_crud.html" %}
+
+{% block title %}CRUD — Offres & réductions{% endblock %}
+{% block page_title %}Offres & réductions{% endblock %}
+
+{% block page_actions %}
+  <button class="btn-primary" type="button" data-open-offer-modal>Ajouter</button>
+{% endblock %}
+
+{% block page_content %}
+  <form class="crud-toolbar" method="get">
+    <input
+      class="crud-input"
+      name="q"
+      value="{{ request.GET.q }}"
+      placeholder="Rechercher par titre..."
+    />
+    <button class="btn-secondary" type="submit">Rechercher</button>
+    <a class="btn-tertiary" href="{% url 'portal:offer_list' %}">Reset</a>
+  </form>
+
+  <div class="crud-card">
+    <div class="crud-table-wrap">
+      <table class="crud-table">
+        <thead>
+          <tr>
+            <th>Titre</th>
+            <th>Badge</th>
+            <th>Remise</th>
+            <th>Actif</th>
+            <th class="is-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for o in offers %}
+            <tr>
+              <td><strong class="crud-strong">{{ o.titre }}</strong></td>
+              <td>{% if o.badge %}{{ o.badge }}{% else %}<span class="crud-muted">—</span>{% endif %}</td>
+              <td>
+                {% if o.remise_percent %}
+                  -{{ o.remise_percent }}%
+                {% else %}
+                  <span class="crud-muted">—</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if o.actif %}
+                  <span class="badge badge-ok">Actif</span>
+                {% else %}
+                  <span class="badge">Inactif</span>
+                {% endif %}
+              </td>
+              <td class="is-right">
+                <div class="crud-actions-inline">
+                  <a class="btn-small" href="{% url 'portal:offer_update' o.pk %}">Modifier</a>
+                  <a class="btn-small btn-danger-outline" href="{% url 'portal:offer_delete' o.pk %}">Supprimer</a>
+                </div>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="5" class="crud-muted">Aucune offre.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div
+    id="offer-modal"
+    style="display:none; position:fixed; inset:0; z-index:10000; background:rgba(15,23,42,0.58); padding:24px;"
+    aria-hidden="true"
+  >
+    <div
+      style="max-width:820px; margin:0 auto; background:#fff; border-radius:18px; overflow:hidden; box-shadow:0 30px 90px rgba(0,0,0,0.28);"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Ajouter une offre"
+    >
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:16px 18px; border-bottom:1px solid #eef2f7;">
+        <div style="font-weight:900; color:#0b2a5a;">Ajouter une offre</div>
+        <button type="button" class="btn-tertiary" data-close-offer-modal>Fermer</button>
+      </div>
+
+      <div style="padding:18px;">
+        <form method="post" enctype="multipart/form-data" class="crud-form">
+          {% csrf_token %}
+
+          <div class="crud-grid-2">
+            <div>
+              <label class="form-label">Titre</label>
+              {{ offer_form.titre }}
+              {% if offer_form.titre.errors %}<div class="form-error">{{ offer_form.titre.errors.0 }}</div>{% endif %}
+            </div>
+            <div>
+              <label class="form-label">Badge</label>
+              {{ offer_form.badge }}
+              {% if offer_form.badge.errors %}<div class="form-error">{{ offer_form.badge.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div class="crud-grid-2">
+            <div>
+              <label class="form-label">Remise (%)</label>
+              {{ offer_form.remise_percent }}
+              {% if offer_form.remise_percent.errors %}<div class="form-error">{{ offer_form.remise_percent.errors.0 }}</div>{% endif %}
+            </div>
+            <div>
+              <label class="form-label">Actif</label>
+              <div class="trust-row">
+                {{ offer_form.actif }}
+                <span>Afficher côté client</span>
+              </div>
+              {% if offer_form.actif.errors %}<div class="form-error">{{ offer_form.actif.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div>
+            <label class="form-label">Description</label>
+            {{ offer_form.description }}
+            {% if offer_form.description.errors %}<div class="form-error">{{ offer_form.description.errors.0 }}</div>{% endif %}
+          </div>
+
+          <div class="crud-grid-2">
+            <div>
+              <label class="form-label">Titre conditions</label>
+              {{ offer_form.conditions_titre }}
+              {% if offer_form.conditions_titre.errors %}<div class="form-error">{{ offer_form.conditions_titre.errors.0 }}</div>{% endif %}
+            </div>
+            <div>
+              <label class="form-label">Conditions</label>
+              {{ offer_form.conditions }}
+              {% if offer_form.conditions.errors %}<div class="form-error">{{ offer_form.conditions.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div>
+            <label class="form-label">Image / vidéo</label>
+            {{ offer_form.media }}
+            {% if offer_form.media.errors %}<div class="form-error">{{ offer_form.media.errors.0 }}</div>{% endif %}
+          </div>
+
+          {% if offer_form.non_field_errors %}
+            <div class="alert alert-danger" style="margin-top: 12px;">
+              {{ offer_form.non_field_errors.0 }}
+            </div>
+          {% endif %}
+
+          <div class="crud-actions-row" style="margin-top: 14px;">
+            <button type="submit" class="btn-primary">Créer</button>
+            <button type="button" class="btn-secondary" data-close-offer-modal>Annuler</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const modal = document.getElementById("offer-modal");
+      if (!modal) return;
+
+      function openModal() {
+        modal.style.display = "block";
+        modal.setAttribute("aria-hidden", "false");
+      }
+      function closeModal() {
+        modal.style.display = "none";
+        modal.setAttribute("aria-hidden", "true");
+      }
+
+      document.addEventListener("click", function (e) {
+        const t = e.target;
+        if (!(t instanceof Element)) return;
+        if (t.closest("[data-open-offer-modal]")) {
+          e.preventDefault();
+          openModal();
+          return;
+        }
+        if (t.closest("[data-close-offer-modal]")) {
+          e.preventDefault();
+          closeModal();
+          return;
+        }
+        if (t === modal) closeModal();
+      });
+
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") closeModal();
+      });
+
+      {% if offer_modal_open %}
+        openModal();
+      {% endif %}
+    })();
+  </script>
+{% endblock %}
+

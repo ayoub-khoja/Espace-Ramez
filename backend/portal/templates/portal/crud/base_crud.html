@@ -2,19 +2,24 @@
 
 {# Layout CRUD admin sans Tailwind (CSS: static/portal/css/app.css) #}
 
-{% block body_class %}page-crud{% endblock %}
+{% block body_class %}page-dashboard{% endblock %}
 
 {% block content %}
-  <div class="crud-container">
-    <div class="crud-header">
-      <div class="crud-titleblock">
-        <h1 class="crud-title">{% block page_title %}{% endblock %}</h1>
-        {% block page_subtitle %}{% endblock %}
-      </div>
-      <div class="crud-actions">{% block page_actions %}{% endblock %}</div>
-    </div>
+  <div class="dash-layout">
+    {% include "portal/partials/admin_sidebar.html" %}
+    <div class="dash-main">
+      <div class="crud-container">
+        <div class="crud-header">
+          <div class="crud-titleblock">
+            <h1 class="crud-title">{% block page_title %}{% endblock %}</h1>
+            {% block page_subtitle %}{% endblock %}
+          </div>
+          <div class="crud-actions">{% block page_actions %}{% endblock %}</div>
+        </div>
 
-    {% block page_content %}{% endblock %}
+        {% block page_content %}{% endblock %}
+      </div>
+    </div>
   </div>
 {% endblock %}
 

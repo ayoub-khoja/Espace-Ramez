@@ -44,3 +44,51 @@ class Reservation(models.Model):
 
     def __str__(self) -> str:
         return f"{self.client} — {self.terrain} — {self.date} {self.heure_debut}-{self.heure_fin}"
+
+
+class Offer(models.Model):
+    """Offre / réduction affichée côté client et gérée côté admin."""
+
+    titre = models.CharField(max_length=140)
+    badge = models.CharField(max_length=32, blank=True, default="")
+    description = models.TextField(blank=True, default="")
+    conditions_titre = models.CharField(max_length=80, blank=True, default="Conditions")
+    conditions = models.CharField(max_length=180, blank=True, default="")
+
+    remise_percent = models.PositiveSmallIntegerField(null=True, blank=True)
+    actif = models.BooleanField(default=True)
+
+    media = models.FileField(upload_to="offers/", blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-actif", "-updated_at", "-created_at"]
+
+    def __str__(self) -> str:
+        return self.titre
+
+
+class Availability(models.Model):
+    """Disponibilités (horaires) par terrain."""
+
+    terrain = models.ForeignKey(Terrain, on_delete=models.CASCADE, related_name="availabilities")
+    date = models.DateField()
+    heure_debut = models.TimeField()
+    heure_fin = models.TimeField()
+    actif = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-date", "heure_debut"]
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(heure_fin__gt=models.F("heure_debut")),
+                name="availability_end_after_start",
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.terrain} — {self.date} {self.heure_debut}-{self.heure_fin}"

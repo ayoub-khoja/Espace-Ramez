@@ -5,78 +5,16 @@
 
 {% block content %}
 <div class="dash-layout">
-  <aside class="dash-sidebar">
-    <div class="dash-brand">
-      <div class="dash-logo">{% include "portal/partials/logo_svg.html" %}</div>
-      <div>
-        <div class="dash-brand-title">Admin Portal</div>
-        <div class="dash-brand-sub">Court management</div>
-      </div>
-    </div>
-
-    <nav class="dash-nav" aria-label="Navigation">
-      <a class="dash-nav-item is-active" href="{% url 'portal:dashboard' %}">
-        <span class="dash-nav-ico" aria-hidden="true">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <path d="M3 13h8V3H3v10Zm0 8h8v-6H3v6Zm10 0h8V11h-8v10Zm0-18v6h8V3h-8Z" fill="currentColor"/>
-          </svg>
-        </span>
-        Dashboard
-      </a>
-      <a class="dash-nav-item" href="{% url 'portal:reservations_admin' %}">
-        <span class="dash-nav-ico" aria-hidden="true">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <path d="M7 2v2H5a2 2 0 0 0-2 2v3h18V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7Zm14 9H3v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-9Zm-13 3h4v4H8v-4Z" fill="currentColor"/>
-          </svg>
-        </span>
-        Reservations
-      </a>
-      <a class="dash-nav-item" href="#">
-        <span class="dash-nav-ico" aria-hidden="true">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27Z" fill="currentColor"/>
-          </svg>
-        </span>
-        Insights
-      </a>
-      <a class="dash-nav-item" href="#">
-        <span class="dash-nav-ico" aria-hidden="true">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <path d="M19.14 12.94a7.49 7.49 0 0 0 0-1.88l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.6 7.6 0 0 0-1.62-.94l-.36-2.54A.5.5 0 0 0 13.9 1h-3.8a.5.5 0 0 0-.5.42l-.36 2.54c-.57.23-1.12.54-1.62.94l-2.39-.96a.5.5 0 0 0-.6.22L2.7 7.98a.5.5 0 0 0 .12.64l2.03 1.58a7.49 7.49 0 0 0 0 1.88l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.5.4 1.05.71 1.62.94l.36 2.54a.5.5 0 0 0 .5.42h3.8a.5.5 0 0 0 .5-.42l.36-2.54c.57-.23 1.12-.54 1.62-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z" fill="currentColor"/>
-          </svg>
-        </span>
-        Settings
-      </a>
-    </nav>
-
-    <a class="dash-btn-new" href="#">
-      <span class="dash-btn-plus" aria-hidden="true">+</span>
-      New booking
-    </a>
-
-    <div class="dash-sidebar-bottom">
-      <div class="dash-user">
-        <div class="dash-avatar">{{ user.username|slice:":2"|upper }}</div>
-        <div>
-          <div class="dash-user-name">{{ user.get_full_name|default:user.username }}</div>
-          <div class="dash-user-role">Super admin</div>
-        </div>
-      </div>
-      <form method="post" action="{% url 'portal:logout' %}" class="dash-logout-form">
-        {% csrf_token %}
-        <button type="submit" class="dash-logout">Logout</button>
-      </form>
-    </div>
-  </aside>
+  {% include "portal/partials/admin_sidebar.html" %}
 
   <div class="dash-main">
     <header class="dash-header">
       <div>
-        <h2 class="dash-page-title">Performance Overview</h2>
-        <p class="dash-page-sub">Real-time analytics and management for ElitePadel club facilities and active reservations.</p>
+        <h2 class="dash-page-title">Vue d’ensemble</h2>
+        <p class="dash-page-sub">Suivi en temps réel des réservations, terrains et activité du club.</p>
       </div>
       <div class="dash-header-meta">
-        <span class="pill-live"><span class="dot"></span> Live Status</span>
+        <span class="pill-live"><span class="dot"></span> Statut en direct</span>
       </div>
     </header>
 
@@ -91,7 +29,7 @@
           </div>
           <span class="kpi-delta is-up">+12.5%</span>
         </div>
-        <div class="kpi-label">Total Bookings</div>
+        <div class="kpi-label">Réservations</div>
         <div class="kpi-value">1,284</div>
       </article>
 
@@ -107,7 +45,7 @@
           </div>
           <span class="kpi-delta is-up">+8.2%</span>
         </div>
-        <div class="kpi-label">Revenue</div>
+        <div class="kpi-label">Chiffre d’affaires</div>
         <div class="kpi-value">$42,920</div>
       </article>
 
@@ -121,7 +59,7 @@
           </div>
           <span class="kpi-chip">8/10</span>
         </div>
-        <div class="kpi-label">Active Courts</div>
+        <div class="kpi-label">Terrains actifs</div>
         <div class="kpi-value">80%</div>
       </article>
     </section>
@@ -129,16 +67,16 @@
     <section class="dash-grid">
       <div class="dash-card dash-card-wide">
         <div class="dash-card-head">
-          <h3>Recent Activity</h3>
-          <a href="#" class="dash-link">View all</a>
+          <h3>Activité récente</h3>
+          <a href="#" class="dash-link">Tout voir</a>
         </div>
         <div class="dash-table" role="table" aria-label="Recent activity">
           <div class="dash-tr dash-th" role="row">
-            <div role="columnheader">Player</div>
-            <div role="columnheader">Court</div>
-            <div role="columnheader">Time</div>
-            <div role="columnheader">Status</div>
-            <div role="columnheader" class="is-right">Amount</div>
+            <div role="columnheader">Client</div>
+            <div role="columnheader">Terrain</div>
+            <div role="columnheader">Horaire</div>
+            <div role="columnheader">Statut</div>
+            <div role="columnheader" class="is-right">Montant</div>
           </div>
 
           <div class="dash-tr" role="row">
@@ -146,7 +84,7 @@
               <span class="dash-avatar-sm">MS</span>
               <span>Marcus Sterling</span>
             </div>
-            <div role="cell">Padel Court 01</div>
+            <div role="cell">Terrain-Padel-Espace-Ramez</div>
             <div role="cell">14:00 – 15:30</div>
             <div role="cell"><span class="tag tag-ok">CONFIRMED</span></div>
             <div role="cell" class="is-right">$45.00</div>
@@ -157,7 +95,7 @@
               <span class="dash-avatar-sm">ER</span>
               <span>Elena Rodriguez</span>
             </div>
-            <div role="cell">Elite Court 03</div>
+            <div role="cell">Terrain-Padel-Espace-Ramez</div>
             <div role="cell">15:00 – 16:30</div>
             <div role="cell"><span class="tag tag-live">ACTIVE</span></div>
             <div role="cell" class="is-right">$60.00</div>
@@ -168,7 +106,7 @@
               <span class="dash-avatar-sm">JV</span>
               <span>Julian Vane</span>
             </div>
-            <div role="cell">Padel Court 02</div>
+            <div role="cell">Terrain-Padel-Espace-Ramez</div>
             <div role="cell">16:00 – 17:00</div>
             <div role="cell"><span class="tag tag-warn">PENDING</span></div>
             <div role="cell" class="is-right">$35.00</div>
@@ -179,7 +117,7 @@
               <span class="dash-avatar-sm">SC</span>
               <span>Sarah Chen</span>
             </div>
-            <div role="cell">Elite Court 04</div>
+            <div role="cell">Terrain-Padel-Espace-Ramez</div>
             <div role="cell">17:30 – 19:00</div>
             <div role="cell"><span class="tag tag-ok">CONFIRMED</span></div>
             <div role="cell" class="is-right">$60.00</div>
@@ -190,8 +128,8 @@
       <aside class="dash-side">
         <div class="dash-card">
           <div class="dash-card-head">
-            <h3>Daily Demand</h3>
-            <span class="chip">Peak</span>
+          <h3>Demande du jour</h3>
+          <span class="chip">Pic</span>
           </div>
           <div class="mini-chart" aria-hidden="true">
             <div class="bar" style="height:22%"></div>
@@ -207,11 +145,11 @@
           </div>
           <div class="dash-metrics">
             <div class="metric">
-              <div class="metric-k">Busy hours today</div>
+              <div class="metric-k">Heures de forte affluence</div>
               <div class="metric-v">17:00 - 20:00</div>
             </div>
             <div class="metric">
-              <div class="metric-k">Expected visitors</div>
+              <div class="metric-k">Visiteurs attendus</div>
               <div class="metric-v">~142 players</div>
             </div>
           </div>
@@ -220,19 +158,19 @@
         <div class="dash-card dash-card-media">
           <div class="media-bg" aria-hidden="true"></div>
           <div class="media-content">
-            <div class="media-kicker">FACILITY INSIGHT</div>
-            <div class="media-title">New court floodlight maintenance scheduled for Monday.</div>
+            <div class="media-kicker">INFO CLUB</div>
+            <div class="media-title">Maintenance des projecteurs programmée lundi.</div>
           </div>
         </div>
       </aside>
     </section>
 
     <footer class="dash-footer">
-      <div class="dash-footer-left">ELITEPADEL</div>
+      <div class="dash-footer-left">ESPACE RAMEZ</div>
       <div class="dash-footer-right">
-        <a href="#" class="dash-link">Privacy Policy</a>
-        <a href="#" class="dash-link">Terms of Service</a>
-        <a href="#" class="dash-link">Cookie Policy</a>
+        <a href="#" class="dash-link">Confidentialité</a>
+        <a href="#" class="dash-link">Conditions</a>
+        <a href="#" class="dash-link">Cookies</a>
       </div>
     </footer>
   </div>

@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from django.contrib.auth import get_user_model, login as auth_login, logout
+from django.contrib.auth import get_user_model, logout
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView, LogoutView
 from django.http import JsonResponse
@@ -12,11 +13,35 @@ from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.utils.text import slugify
 from django.utils.decorators import method_decorator
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.views.generic import CreateView, DeleteView, ListView, TemplateView, UpdateView
+from django import forms
 
-from .models import Reservation, Terrain
+from .models import Availability, Offer, Reservation, Terrain
+
+
+def _fixed_terrain() -> Terrain | None:
+    return (
+        Terrain.objects.filter(nom__iexact="Terrain-Padel-Espace-Ramez").first()
+        or Terrain.objects.order_by("nom").first()
+    )
+
+
+class OfferForm(forms.ModelForm):
+    class Meta:
+        model = Offer
+        fields = ["titre", "badge", "remise_percent", "description", "conditions_titre", "conditions", "media", "actif"]
+
+        widgets = {
+            "titre": forms.TextInput(attrs={"class": "crud-input", "placeholder": "Titre de l’offre"}),
+            "badge": forms.TextInput(attrs={"class": "crud-input", "placeholder": "Badge (optionnel)"}),
+            "remise_percent": forms.NumberInput(attrs={"class": "crud-input", "placeholder": "Ex: 12"}),
+            "description": forms.Textarea(attrs={"class": "crud-input", "rows": 4, "placeholder": "Description (optionnel)"}),
+            "conditions_titre": forms.TextInput(attrs={"class": "crud-input", "placeholder": "Ex: Conditions premium"}),
+            "conditions": forms.TextInput(attrs={"class": "crud-input", "placeholder": "Ex: Annulation flexible · Support 7j/7"}),
+        }
 
 User = get_user_model()
 
@@ -41,6 +66,70 @@ def public_home(request):
 class ClientReservationView(TemplateView):
     template_name = "portal/public/reservation.html"
 
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        terrains = list(Terrain.objects.filter(actif=True).order_by("nom"))
+        ctx["terrains"] = terrains
+
+        # Date/terrain sélectionnés via query params
+        today = timezone.localdate()
+        date_s = (self.request.GET.get("date") or "").strip()
+        selected_date = today
+        if date_s:
+            try:
+                selected_date = timezone.datetime.fromisoformat(date_s).date()
+            except ValueError:
+                selected_date = today
+
+        terrain_id = (self.request.GET.get("terrain") or "").strip()
+        selected_terrain = terrains[0] if terrains else None
+        if terrain_id.isdigit():
+            for t in terrains:
+                if t.id == int(terrain_id):
+                    selected_terrain = t
+                    break
+
+        ctx["selected_date"] = selected_date
+        ctx["selected_terrain"] = selected_terrain
+        ctx["date_choices"] = [today + timezone.timedelta(days=i) for i in range(0, 7)]
+
+        slots = []
+        if selected_terrain:
+            avail_qs = (
+                Availability.objects.filter(
+                    terrain=selected_terrain,
+                    date=selected_date,
+                    actif=True,
+                )
+                .order_by("heure_debut")
+            )
+            reservations = list(
+                Reservation.objects.filter(
+                    terrain=selected_terrain,
+                    date=selected_date,
+                ).exclude(statut="CANCELLED")
+            )
+
+            def is_reserved(a: Availability) -> bool:
+                for r in reservations:
+                    # overlap: start < other_end and other_start < end
+                    if a.heure_debut < r.heure_fin and r.heure_debut < a.heure_fin:
+                        return True
+                return False
+
+            for a in avail_qs:
+                slots.append(
+                    {
+                        "id": a.id,
+                        "start": a.heure_debut,
+                        "end": a.heure_fin,
+                        "reserved": is_reserved(a),
+                    }
+                )
+
+        ctx["slots"] = slots
+        return ctx
+
 
 class ClientContactView(TemplateView):
     template_name = "portal/public/contact.html"
@@ -55,12 +144,55 @@ class ClientPanierView(TemplateView):
 class ClientOffresView(TemplateView):
     template_name = "portal/public/offres.html"
 
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["offers"] = Offer.objects.filter(actif=True).order_by("-updated_at", "-created_at")
+        return ctx
+
 
 @require_POST
 def client_logout(request):
     """Déconnexion côté site client (ne touche pas au portail admin)."""
     logout(request)
     return redirect("portal:home")
+
+
+@login_required
+@require_POST
+def client_book_slot(request):
+    availability_id = (request.POST.get("availability_id") or "").strip()
+    if not availability_id.isdigit():
+        messages.error(request, "Créneau invalide.")
+        return redirect("portal:client_reservation")
+
+    a = Availability.objects.filter(pk=int(availability_id), actif=True).select_related("terrain").first()
+    if not a:
+        messages.error(request, "Ce créneau n'est plus disponible.")
+        return redirect("portal:client_reservation")
+
+    overlap_exists = (
+        Reservation.objects.filter(
+            terrain=a.terrain,
+            date=a.date,
+        )
+        .exclude(statut="CANCELLED")
+        .filter(heure_debut__lt=a.heure_fin, heure_fin__gt=a.heure_debut)
+        .exists()
+    )
+    if overlap_exists:
+        messages.error(request, "Ce créneau vient d’être réservé. Choisissez un autre horaire.")
+        return redirect("portal:client_reservation")
+
+    Reservation.objects.create(
+        terrain=a.terrain,
+        client=request.user,
+        date=a.date,
+        heure_debut=a.heure_debut,
+        heure_fin=a.heure_fin,
+        statut="CONFIRMED",
+    )
+    messages.success(request, "Réservation confirmée.")
+    return redirect("portal:client_panier")
 
 
 class PortalLoginView(LoginView):
@@ -158,8 +290,8 @@ def client_signup(request):
     # On stocke le téléphone dans last_name? Non. On le garde pour plus tard via un Profile model.
     # Pour l'instant on n'enregistre pas 'phone' en base (pas de champ standard).
     user.save()
-    auth_login(request, user)
-    return redirect("portal:home")
+    messages.success(request, "Compte créé avec succès. Connectez-vous pour continuer.")
+    return redirect("portal:login")
 
 
 class PortalLogoutView(LogoutView):
@@ -330,6 +462,227 @@ class ReservationsAdminView(TemplateView):
         ]
         return ctx
 
+
+@method_decorator(login_required, name="dispatch")
+class OffersAdminView(TemplateView):
+    """Vue — gestion des offres et réductions (admin)."""
+
+    template_name = "portal/offers_admin.html"
+
+
+@method_decorator(login_required, name="dispatch")
+class OfferListView(ListView):
+    model = Offer
+    template_name = "portal/crud/offer_list.html"
+    context_object_name = "offers"
+    paginate_by = 20
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        q = (self.request.GET.get("q") or "").strip()
+        if q:
+            qs = qs.filter(titre__icontains=q)
+        return qs
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["offer_form"] = kwargs.get("offer_form") or OfferForm()
+        ctx["offer_modal_open"] = kwargs.get("offer_modal_open", False)
+        return ctx
+
+    def post(self, request, *args, **kwargs):
+        form = OfferForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Offre ajoutée avec succès.")
+            return redirect("portal:offer_list")
+
+        # Réaffiche la liste + ouvre la modal avec les erreurs.
+        self.object_list = self.get_queryset()
+        context = self.get_context_data(offer_form=form, offer_modal_open=True)
+        return self.render_to_response(context, status=400)
+
+
+@method_decorator(login_required, name="dispatch")
+class OfferCreateView(CreateView):
+    model = Offer
+    fields = ["titre", "badge", "remise_percent", "description", "conditions_titre", "conditions", "media", "actif"]
+    template_name = "portal/crud/offer_form.html"
+    success_url = reverse_lazy("portal:offer_list")
+
+
+@method_decorator(login_required, name="dispatch")
+class OfferUpdateView(UpdateView):
+    model = Offer
+    fields = ["titre", "badge", "remise_percent", "description", "conditions_titre", "conditions", "media", "actif"]
+    template_name = "portal/crud/offer_form.html"
+    success_url = reverse_lazy("portal:offer_list")
+
+
+@method_decorator(login_required, name="dispatch")
+class OfferDeleteView(DeleteView):
+    model = Offer
+    template_name = "portal/crud/offer_confirm_delete.html"
+    success_url = reverse_lazy("portal:offer_list")
+
+
+@method_decorator(login_required, name="dispatch")
+class ClientListView(ListView):
+    model = User
+    template_name = "portal/crud/client_list.html"
+    context_object_name = "clients"
+    paginate_by = 30
+
+    def get_queryset(self):
+        qs = super().get_queryset().filter(is_active=True, is_staff=False, is_superuser=False)
+        q = (self.request.GET.get("q") or "").strip()
+        if q:
+            qs = qs.filter(username__icontains=q) | qs.filter(email__icontains=q) | qs.filter(first_name__icontains=q) | qs.filter(last_name__icontains=q)
+        return qs.order_by("-date_joined")
+
+
+class AvailabilityForm(forms.ModelForm):
+    class Meta:
+        model = Availability
+        fields = ["terrain", "date", "heure_debut", "heure_fin", "actif"]
+        widgets = {
+            "terrain": forms.Select(attrs={"class": "crud-select"}),
+            "date": forms.DateInput(attrs={"class": "crud-input", "type": "date"}),
+            "heure_debut": forms.TimeInput(attrs={"class": "crud-input", "type": "time"}),
+            "heure_fin": forms.TimeInput(attrs={"class": "crud-input", "type": "time"}),
+        }
+
+    repeat_days = forms.MultipleChoiceField(
+        required=False,
+        choices=[
+            ("0", "Lun"),
+            ("1", "Mar"),
+            ("2", "Mer"),
+            ("3", "Jeu"),
+            ("4", "Ven"),
+            ("5", "Sam"),
+            ("6", "Dim"),
+        ],
+        widget=forms.CheckboxSelectMultiple,
+        label="Jours",
+        help_text="Optionnel: créer les mêmes horaires sur plusieurs jours.",
+    )
+    repeat_weeks = forms.IntegerField(
+        required=False,
+        min_value=1,
+        max_value=52,
+        initial=1,
+        label="Nombre de semaines",
+        help_text="Ex: 4 pour répéter sur 4 semaines à partir de la date choisie.",
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Dans ton projet, on force un seul terrain sélectionné (non modifiable).
+        fixed = _fixed_terrain()
+        self._fixed_terrain = fixed
+
+        if fixed:
+            self.fields["terrain"].queryset = Terrain.objects.filter(pk=fixed.pk)
+            self.fields["terrain"].initial = fixed
+            self.fields["terrain"].widget = forms.HiddenInput()
+
+    def clean_terrain(self):
+        # Ignore toute tentative de modifier le terrain depuis le formulaire.
+        if getattr(self, "_fixed_terrain", None):
+            return self._fixed_terrain
+        return self.cleaned_data["terrain"]
+
+
+@method_decorator(login_required, name="dispatch")
+class AvailabilityListView(ListView):
+    model = Availability
+    template_name = "portal/crud/availability_list.html"
+    context_object_name = "items"
+    paginate_by = 30
+
+    def get_queryset(self):
+        qs = super().get_queryset().select_related("terrain")
+        terrain_id = (self.request.GET.get("terrain") or "").strip()
+        date_s = (self.request.GET.get("date") or "").strip()
+        if terrain_id.isdigit():
+            qs = qs.filter(terrain_id=int(terrain_id))
+        if date_s:
+            qs = qs.filter(date=date_s)
+        return qs
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        form = kwargs.get("availability_form") or AvailabilityForm()
+        ctx["availability_form"] = form
+        fixed = _fixed_terrain()
+        ctx["availability_terrain_label"] = getattr(fixed, "nom", None) or "Terrain"
+        ctx["availability_modal_open"] = kwargs.get("availability_modal_open", False)
+        return ctx
+
+    def post(self, request, *args, **kwargs):
+        form = AvailabilityForm(request.POST)
+        if form.is_valid():
+            cd = form.cleaned_data
+            terrain = cd["terrain"]
+            date = cd["date"]
+            hd = cd["heure_debut"]
+            hf = cd["heure_fin"]
+            actif = cd["actif"]
+
+            repeat_days = [int(x) for x in (cd.get("repeat_days") or []) if str(x).isdigit()]
+            repeat_weeks = cd.get("repeat_weeks") or 1
+
+            created = 0
+            if repeat_days:
+                start = date
+                for w in range(int(repeat_weeks)):
+                    base = start + timezone.timedelta(days=7 * w)
+                    # Pour chaque jour de la semaine choisi, on calcule la date dans la semaine.
+                    for d in repeat_days:
+                        day_date = base + timezone.timedelta(days=(d - base.weekday()) % 7)
+                        Availability.objects.create(
+                            terrain=terrain,
+                            date=day_date,
+                            heure_debut=hd,
+                            heure_fin=hf,
+                            actif=actif,
+                        )
+                        created += 1
+            else:
+                form.save()
+                created = 1
+
+            messages.success(request, f"Disponibilité ajoutée ({created}).")
+            return redirect("portal:availability_list")
+
+        self.object_list = self.get_queryset()
+        context = self.get_context_data(availability_form=form, availability_modal_open=True)
+        return self.render_to_response(context, status=400)
+
+
+@method_decorator(login_required, name="dispatch")
+class AvailabilityCreateView(CreateView):
+    model = Availability
+    form_class = AvailabilityForm
+    template_name = "portal/crud/availability_form.html"
+    success_url = reverse_lazy("portal:availability_list")
+
+
+@method_decorator(login_required, name="dispatch")
+class AvailabilityUpdateView(UpdateView):
+    model = Availability
+    form_class = AvailabilityForm
+    template_name = "portal/crud/availability_form.html"
+    success_url = reverse_lazy("portal:availability_list")
+
+
+@method_decorator(login_required, name="dispatch")
+class AvailabilityDeleteView(DeleteView):
+    model = Availability
+    template_name = "portal/crud/availability_confirm_delete.html"
+    success_url = reverse_lazy("portal:availability_list")
 
 @csrf_exempt
 @require_POST

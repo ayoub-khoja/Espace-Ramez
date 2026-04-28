@@ -1,0 +1,22 @@
+{% extends "portal/crud/base_crud.html" %}
+
+{% block title %}Supprimer — Disponibilité{% endblock %}
+{% block page_title %}Supprimer la disponibilité{% endblock %}
+
+{% block page_actions %}
+  <a class="btn-tertiary" href="{% url 'portal:availability_list' %}">Retour</a>
+{% endblock %}
+
+{% block page_content %}
+  <div class="crud-card crud-card-pad">
+    <div class="alert alert-warn">
+      Confirmer la suppression de <strong>{{ object.terrain.nom }}</strong> — {{ object.date }} {{ object.heure_debut }}-{{ object.heure_fin }} ?
+    </div>
+    <form method="post" class="crud-actions-row" style="margin-top: 1rem;">
+      {% csrf_token %}
+      <button type="submit" class="btn-danger">Oui, supprimer</button>
+      <a class="btn-secondary" href="{% url 'portal:availability_list' %}">Annuler</a>
+    </form>
+  </div>
+{% endblock %}
+

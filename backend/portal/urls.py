@@ -9,6 +9,7 @@ urlpatterns = [
     path("", views.public_home, name="home"),
     # Pages client (Django templates "comme frontend")
     path("reservation/", views.ClientReservationView.as_view(), name="client_reservation"),
+    path("reservation/book/", views.client_book_slot, name="client_book_slot"),
     path("contact/", views.ClientContactView.as_view(), name="client_contact"),
     path("panier/", views.ClientPanierView.as_view(), name="client_panier"),
     path("offres/", views.ClientOffresView.as_view(), name="client_offres"),
@@ -37,6 +38,15 @@ urlpatterns = [
     path("client/deconnexion/", views.client_logout, name="client_logout"),
     path("tableau-de-bord/", views.DashboardView.as_view(), name="dashboard"),
     path("reservations/", views.ReservationsAdminView.as_view(), name="reservations_admin"),
+    path("offres-reductions/", views.OfferListView.as_view(), name="offer_list"),
+    path("offres-reductions/ajouter/", views.OfferCreateView.as_view(), name="offer_create"),
+    path("offres-reductions/<int:pk>/modifier/", views.OfferUpdateView.as_view(), name="offer_update"),
+    path("offres-reductions/<int:pk>/supprimer/", views.OfferDeleteView.as_view(), name="offer_delete"),
+    path("gestion-clients/", views.ClientListView.as_view(), name="client_list"),
+    path("gestion-horaires/", views.AvailabilityListView.as_view(), name="availability_list"),
+    path("gestion-horaires/ajouter/", views.AvailabilityCreateView.as_view(), name="availability_create"),
+    path("gestion-horaires/<int:pk>/modifier/", views.AvailabilityUpdateView.as_view(), name="availability_update"),
+    path("gestion-horaires/<int:pk>/supprimer/", views.AvailabilityDeleteView.as_view(), name="availability_delete"),
     # CRUD (Django templates + Bootstrap)
     path("terrains/", views.TerrainListView.as_view(), name="terrain_list"),
     path("terrains/ajouter/", views.TerrainCreateView.as_view(), name="terrain_create"),
