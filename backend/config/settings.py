@@ -17,9 +17,11 @@ SECRET_KEY = os.environ.get(
 DEBUG = False
 
 ALLOWED_HOSTS: list[str] = [
-    "espaceramez.onrender.com",
+    "espace-ramez.onrender.com",
     "www.espaceramez.com",
     "espaceramez.com",
+    "www.espaceramez.tn",
+    "espaceramez.tn",
     # local
     "127.0.0.1",
     "localhost",
@@ -41,6 +43,9 @@ CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
     "https://espaceramez.com",
     "https://www.espaceramez.com",
+    "https://espaceramez.tn",
+    "https://www.espaceramez.tn",
+    "https://espace-ramez.onrender.com",
     # local
     "http://127.0.0.1:3000",
     "http://localhost:3000",
