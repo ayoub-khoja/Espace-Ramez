@@ -3,8 +3,6 @@
 import os
 from pathlib import Path
 
-import dj_database_url
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 (BASE_DIR / "data").mkdir(parents=True, exist_ok=True)
@@ -14,12 +12,20 @@ SECRET_KEY = os.environ.get(
     "dev-only-not-for-production-change-with-env",  # noqa: S105
 )
 
-DEBUG = False
+_DJANGO_DEBUG = os.environ.get("DJANGO_DEBUG", "").lower()
+# En local: DEBUG=True par défaut pour faciliter l'examen/démo.
+DEBUG = (
+    (_DJANGO_DEBUG in {"1", "true", "yes", "on"})
+    if _DJANGO_DEBUG
+    else (os.environ.get("RENDER") is None)
+)
 
 ALLOWED_HOSTS: list[str] = [
-    "espaceramez.onrender.com",
+    "espace-ramez.onrender.com",
     "www.espaceramez.com",
     "espaceramez.com",
+    "www.espaceramez.tn",
+    "espaceramez.tn",
     # local
     "127.0.0.1",
     "localhost",
@@ -41,6 +47,9 @@ CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
     "https://espaceramez.com",
     "https://www.espaceramez.com",
+    "https://espaceramez.tn",
+    "https://www.espaceramez.tn",
+    "https://espace-ramez.onrender.com",
     # local
     "http://127.0.0.1:3000",
     "http://localhost:3000",
@@ -54,7 +63,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "portal",
+    "portal.apps.PortalConfig",
 ]
 
 MIDDLEWARE = [
@@ -96,10 +105,6 @@ DATABASES = {
     },
 }
 
-# Render / production: si DATABASE_URL est présent (Postgres), on l'utilise.
-if os.environ.get("DATABASE_URL"):
-    DATABASES["default"] = dj_database_url.config(conn_max_age=600, ssl_require=True)
-
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -119,10 +124,17 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 _FRONTEND_PUBLIC = BASE_DIR.parent / "frontend" / "public"
 STATICFILES_DIRS = [_FRONTEND_PUBLIC] if _FRONTEND_PUBLIC.is_dir() else []
 
-# Serve static files in production (Render)
+# Storages (Django >= 4.2)
 STORAGES = {
+    # Uploads (MEDIA)
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    # Static files
     "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
 }
+
+# Media uploads (images/vidéos offres)
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

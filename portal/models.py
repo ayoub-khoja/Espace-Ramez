@@ -1,10 +1,22 @@
-"""Modèles métier (MVT) — SQLite3 via ORM Django."""
+"""
+Modèles métier (MVT) — SQLite3 via ORM Django.
+
+Objectif pédagogique (examen) :
+- Avoir **au moins 2 modèles** avec une **relation** (ForeignKey).
+- Manipuler ces données via des vues/templates CRUD.
+"""
 
 from django.conf import settings
 from django.db import models
 
 
 class Terrain(models.Model):
+    """
+    Terrain réservé par les clients.
+
+    C'est une entité "parent" utilisée par `Reservation` (relation ForeignKey).
+    """
+
     nom = models.CharField(max_length=120)
     type = models.CharField(max_length=60, default="Padel")
     indoor = models.BooleanField(default=True)
@@ -21,11 +33,19 @@ class Terrain(models.Model):
 
 class Reservation(models.Model):
     STATUS_CHOICES = [
-        ("CONFIRMED", "Confirmed"),
-        ("IN_PROGRESS", "In progress"),
-        ("PENDING", "Pending"),
-        ("CANCELLED", "Cancelled"),
+        ("CONFIRMED", "Confirmée"),
+        ("IN_PROGRESS", "En cours"),
+        ("PENDING", "En attente"),
+        ("CANCELLED", "Annulée"),
     ]
+
+    """
+    Réservation d'un terrain par un client (utilisateur Django).
+
+    Points importants :
+    - `terrain` : relation vers `Terrain` (ForeignKey) → exigence "relation" de l'examen.
+    - `client` : relation vers `AUTH_USER_MODEL` (User Django).
+    """
 
     terrain = models.ForeignKey(Terrain, on_delete=models.PROTECT, related_name="reservations")
     client = models.ForeignKey(

@@ -7,7 +7,7 @@ app_name = "portal"
 
 urlpatterns = [
     path("", views.public_home, name="home"),
-    # Pages client (Django templates "comme frontend")
+    # Pages client (templates Django)
     path("reservation/", views.ClientReservationView.as_view(), name="client_reservation"),
     path("contact/", views.ClientContactView.as_view(), name="client_contact"),
     path("panier/", views.ClientPanierView.as_view(), name="client_panier"),
@@ -47,7 +47,7 @@ urlpatterns = [
     path("reservations-crud/ajouter/", views.ReservationCreateView.as_view(), name="reservation_create"),
     path("reservations-crud/<int:pk>/modifier/", views.ReservationUpdateView.as_view(), name="reservation_update"),
     path("reservations-crud/<int:pk>/supprimer/", views.ReservationDeleteView.as_view(), name="reservation_delete"),
-    # Next.js normalise souvent les URLs API sans slash final -> on supporte les deux.
+    # Support des URLs API avec et sans slash final.
     path("api/auth/logout", views.api_auth_logout, name="api_auth_logout_noslash"),
     path("api/auth/logout/", views.api_auth_logout, name="api_auth_logout"),
     path("api/auth/me", views.api_auth_me, name="api_auth_me_noslash"),

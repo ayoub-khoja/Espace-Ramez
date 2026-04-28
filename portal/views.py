@@ -1,4 +1,12 @@
-"""Vues MVT du portail administrateur."""
+"""
+Vues MVT (Modèle - Vue - Template).
+
+Convention d'organisation du fichier :
+- Pages publiques (site client)
+- Authentification (client + admin)
+- CRUD (List/Create/Update/Delete) sur des modèles
+- Petites APIs JSON (utile pour démo)
+"""
 
 from __future__ import annotations
 
@@ -37,6 +45,10 @@ def public_home(request):
     """Accueil public (Django templates, Bootstrap)."""
     return render(request, "portal/public/home.html")
 
+# --------------------
+# Pages publiques (UI)
+# --------------------
+
 
 class ClientReservationView(TemplateView):
     template_name = "portal/public/reservation.html"
@@ -54,6 +66,10 @@ class ClientPanierView(TemplateView):
 @method_decorator(login_required, name="dispatch")
 class ClientOffresView(TemplateView):
     template_name = "portal/public/offres.html"
+
+# ------------------------
+# Authentification / compte
+# ------------------------
 
 
 @require_POST
@@ -88,6 +104,10 @@ def client_signup(request):
 
     - GET : affiche la carte d'inscription (flip)
     - POST : crée un utilisateur Django puis connecte la session
+
+    Note (pédagogique) :
+    - Ici, on garde un flux volontairement simple.
+    - Pour stocker le téléphone proprement, on créerait un modèle `Profile` lié à `User`.
     """
     if request.user.is_authenticated:
         return redirect("portal:home")
@@ -155,8 +175,7 @@ def client_signup(request):
     user = User.objects.create_user(username=safe_username, email=email, password=password1)
     user.first_name = first_name
     user.last_name = last_name
-    # On stocke le téléphone dans last_name? Non. On le garde pour plus tard via un Profile model.
-    # Pour l'instant on n'enregistre pas 'phone' en base (pas de champ standard).
+    # Pour l'instant on n'enregistre pas 'phone' en base (pas de champ standard sur User).
     user.save()
     auth_login(request, user)
     return redirect("portal:home")
@@ -184,9 +203,9 @@ class DashboardView(TemplateView):
         return ctx
 
 
-# -----------------------
-# CRUD Terrain (Bootstrap)
-# -----------------------
+# -------------------------
+# CRUD Terrain (pages HTML)
+# -------------------------
 
 
 @method_decorator(login_required, name="dispatch")
@@ -227,9 +246,9 @@ class TerrainDeleteView(DeleteView):
     success_url = reverse_lazy("portal:terrain_list")
 
 
-# ---------------------------
-# CRUD Reservation (Bootstrap)
-# ---------------------------
+# ------------------------------
+# CRUD Reservation (pages HTML)
+# ------------------------------
 
 
 @method_decorator(login_required, name="dispatch")
@@ -272,7 +291,13 @@ class ReservationDeleteView(DeleteView):
 
 @method_decorator(login_required, name="dispatch")
 class ReservationsAdminView(TemplateView):
-    """Vue — écran admin des réservations (template MVT)."""
+    """
+    Écran admin (UI) des réservations.
+
+    Remarque : cette vue contient des données "démo" pour illustrer l'interface.
+    Pour la partie CRUD/SQLite de l'examen, la référence est `ReservationListView`
+    (qui lit la base de données et pagine).
+    """
 
     template_name = "portal/reservations.html"
 
@@ -341,9 +366,9 @@ def api_auth_logout(request):
 
     Réponse : ``{"ok": true}`` (idempotent si déjà déconnecté).
 
-    Même origine (recommandé, port 3000) : ``fetch('/api/auth/logout/', { method: 'POST', credentials: 'include' })``.
-
-    Cross-origin : ``fetch(DJANGO_ORIGIN + '/api/auth/logout/', { ... })`` (CORS déjà configuré).
+    Pourquoi `csrf_exempt` ?
+    - On simplifie la démo (appel fetch) en développement.
+    - En production, on préférerait un flux CSRF complet ou un token.
     """
     if request.user.is_authenticated:
         logout(request)
