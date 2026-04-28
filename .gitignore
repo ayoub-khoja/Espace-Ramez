@@ -1,32 +1,37 @@
-# Racine monorepo
+# Node / Next.js
 node_modules/
-.DS_Store
-*.pem
+.next/
+out/
+.vercel/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-
-# Frontend (Next.js)
-frontend/node_modules/
-frontend/.next/
-frontend/out/
-frontend/.vercel
-frontend/.env*
-!frontend/.env.example
-
-# Backend (API + SQLite)
-backend/node_modules/
-backend/.env
-backend/data/*.sqlite
-backend/data/*.sqlite-journal
-backend/.venv/
-backend/venv/
-backend/__pycache__/
-backend/**/__pycache__/
-backend/*.sqlite3
-backend/data/db.sqlite3
-backend/data/db.sqlite3-journal
-backend/.pytest_cache/
-
-# TypeScript
+pnpm-debug.log*
 *.tsbuildinfo
+
+# Python / Django
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Environment files
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+# SQLite / data
+*.sqlite
+*.sqlite3
+*.sqlite-journal
+data/
+backend/data/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.pem

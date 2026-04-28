@@ -1,0 +1,124 @@
+{% load static %}
+<!doctype html>
+<html lang="fr" class="h-full antialiased">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Espace Ramez{% endblock %}</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    {% block extra_head %}{% endblock %}
+  </head>
+  <body class="min-h-full">
+    <div style="--accent: #2563EB" class="flex min-h-screen flex-col bg-white text-zinc-900">
+      <div class="sticky top-0 z-50 px-3 pt-3 sm:px-6 sm:pt-4">
+        <header
+          class="rounded-b-3xl border border-zinc-200/70 bg-zinc-100/85 shadow-sm backdrop-blur-md"
+        >
+          <div class="relative mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-3 px-4 sm:h-16 sm:gap-6 sm:px-6">
+            <a
+              href="{% url 'portal:home' %}"
+              class="shrink-0 text-lg font-bold tracking-tight text-[#0a1f3d] sm:text-xl"
+            >
+              Espace Ramez
+            </a>
+
+            {% url "portal:home" as nav_home %}
+            {% url "portal:client_reservation" as nav_reservation %}
+            {% url "portal:client_contact" as nav_contact %}
+            {% url "portal:client_panier" as nav_panier %}
+            {% url "portal:client_offres" as nav_offres %}
+
+            <nav
+              class="flex min-w-0 flex-1 justify-center gap-5 overflow-x-auto px-2 text-sm font-medium sm:absolute sm:left-1/2 sm:top-1/2 sm:max-w-none sm:-translate-x-1/2 sm:-translate-y-1/2 sm:justify-center sm:gap-10 sm:overflow-visible sm:px-0 sm:text-[0.9375rem]"
+              aria-label="Navigation principale"
+            >
+              <a href="{{ nav_home }}"
+                 class="relative inline-block whitespace-nowrap pb-1.5 transition-colors hover:text-[#0a1f3d] {% if request.path == nav_home %}text-[#0a1f3d]{% else %}text-zinc-600{% endif %}">
+                Accueil
+                <span class="absolute bottom-0 left-0 h-0.5 w-full origin-left rounded-full bg-(--accent,#2563EB) transition-transform {% if request.path == nav_home %}scale-x-100{% else %}scale-x-0{% endif %}"
+                      aria-hidden></span>
+              </a>
+              <a href="{{ nav_reservation }}"
+                 class="relative inline-block whitespace-nowrap pb-1.5 transition-colors hover:text-[#0a1f3d] {% if request.path == nav_reservation %}text-[#0a1f3d]{% else %}text-zinc-600{% endif %}">
+                Réservation
+                <span class="absolute bottom-0 left-0 h-0.5 w-full origin-left rounded-full bg-(--accent,#2563EB) transition-transform {% if request.path == nav_reservation %}scale-x-100{% else %}scale-x-0{% endif %}"
+                      aria-hidden></span>
+              </a>
+              <a href="{{ nav_contact }}"
+                 class="relative inline-block whitespace-nowrap pb-1.5 transition-colors hover:text-[#0a1f3d] {% if request.path == nav_contact %}text-[#0a1f3d]{% else %}text-zinc-600{% endif %}">
+                Contact
+                <span class="absolute bottom-0 left-0 h-0.5 w-full origin-left rounded-full bg-(--accent,#2563EB) transition-transform {% if request.path == nav_contact %}scale-x-100{% else %}scale-x-0{% endif %}"
+                      aria-hidden></span>
+              </a>
+              {% if request.user.is_authenticated %}
+                <a href="{{ nav_panier }}"
+                   class="relative inline-block whitespace-nowrap pb-1.5 transition-colors hover:text-[#0a1f3d] {% if request.path == nav_panier %}text-[#0a1f3d]{% else %}text-zinc-600{% endif %}">
+                  Panier
+                  <span class="absolute bottom-0 left-0 h-0.5 w-full origin-left rounded-full bg-(--accent,#2563EB) transition-transform {% if request.path == nav_panier %}scale-x-100{% else %}scale-x-0{% endif %}"
+                        aria-hidden></span>
+                </a>
+                <a href="{{ nav_offres }}"
+                   class="relative inline-block whitespace-nowrap pb-1.5 transition-colors hover:text-[#0a1f3d] {% if request.path == nav_offres %}text-[#0a1f3d]{% else %}text-zinc-600{% endif %}">
+                  Offres & réductions
+                  <span class="absolute bottom-0 left-0 h-0.5 w-full origin-left rounded-full bg-(--accent,#2563EB) transition-transform {% if request.path == nav_offres %}scale-x-100{% else %}scale-x-0{% endif %}"
+                        aria-hidden></span>
+                </a>
+              {% endif %}
+            </nav>
+
+            {% if request.user.is_authenticated %}
+              <form method="post" action="{% url 'portal:client_logout' %}">
+                {% csrf_token %}
+                <button
+                  type="submit"
+                  class="relative z-50 inline-flex h-9 shrink-0 items-center justify-center rounded-xl bg-[#0a1f3d] px-3.5 text-sm font-medium text-white transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--accent,#2563EB),transparent_55%)] sm:h-11 sm:px-5"
+                >
+                  Déconnexion
+                </button>
+              </form>
+            {% else %}
+              <a
+                href="/login/"
+                class="relative z-50 inline-flex h-9 shrink-0 items-center justify-center rounded-xl bg-[#0a1f3d] px-3.5 text-sm font-medium text-white transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--accent,#2563EB),transparent_55%)] sm:h-11 sm:px-5"
+              >
+                Se connecter
+              </a>
+            {% endif %}
+          </div>
+        </header>
+      </div>
+
+      <main class="flex-1">
+        {% if messages %}
+          <div class="mx-auto w-full max-w-6xl px-4 pt-4 sm:px-6">
+            {% for message in messages %}
+              <div class="rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700 shadow-sm">
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+        {% block content %}{% endblock %}
+      </main>
+
+      <footer class="border-t border-zinc-200 bg-zinc-50 py-10 sm:py-12">
+        <div class="mx-auto w-full max-w-6xl px-4 sm:px-6">
+          <div class="flex flex-col gap-8 sm:flex-row sm:items-center sm:justify-between">
+            <div class="shrink-0">
+              <p class="text-lg font-bold tracking-tight text-[#0a1f3d]">Espace Ramez</p>
+              <p class="mt-1 text-sm text-zinc-500">© {% now "Y" %} Espace Ramez. Tous droits réservés.</p>
+            </div>
+            <nav class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-zinc-600" aria-label="Informations légales">
+              <a href="{% url 'portal:home' %}#legal" class="transition-colors hover:text-[#0a1f3d]">Politique de confidentialité</a>
+              <a href="{% url 'portal:home' %}#legal" class="transition-colors hover:text-[#0a1f3d]">Conditions d'utilisation</a>
+              <a href="{% url 'portal:home' %}#legal" class="transition-colors hover:text-[#0a1f3d]">Politique relative aux cookies</a>
+            </nav>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    {% block extra_js %}{% endblock %}
+  </body>
+</html>
+

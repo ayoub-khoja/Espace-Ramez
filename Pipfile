@@ -1,0 +1,13 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+django = "<6,>=5.0"
+django-cors-headers = "<5,>=4.3"
+
+[dev-packages]
+
+[requires]
+python_version = "3.10"

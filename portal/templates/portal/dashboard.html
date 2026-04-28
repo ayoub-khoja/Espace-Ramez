@@ -1,0 +1,240 @@
+{% extends "portal/base.html" %}
+{% load static %}
+{% block title %}Tableau de bord — Espace Ramez{% endblock %}
+{% block body_class %}page-dashboard{% endblock %}
+
+{% block content %}
+<div class="dash-layout">
+  <aside class="dash-sidebar">
+    <div class="dash-brand">
+      <div class="dash-logo">{% include "portal/partials/logo_svg.html" %}</div>
+      <div>
+        <div class="dash-brand-title">Admin Portal</div>
+        <div class="dash-brand-sub">Court management</div>
+      </div>
+    </div>
+
+    <nav class="dash-nav" aria-label="Navigation">
+      <a class="dash-nav-item is-active" href="{% url 'portal:dashboard' %}">
+        <span class="dash-nav-ico" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M3 13h8V3H3v10Zm0 8h8v-6H3v6Zm10 0h8V11h-8v10Zm0-18v6h8V3h-8Z" fill="currentColor"/>
+          </svg>
+        </span>
+        Dashboard
+      </a>
+      <a class="dash-nav-item" href="{% url 'portal:reservations_admin' %}">
+        <span class="dash-nav-ico" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M7 2v2H5a2 2 0 0 0-2 2v3h18V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7Zm14 9H3v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-9Zm-13 3h4v4H8v-4Z" fill="currentColor"/>
+          </svg>
+        </span>
+        Reservations
+      </a>
+      <a class="dash-nav-item" href="#">
+        <span class="dash-nav-ico" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27Z" fill="currentColor"/>
+          </svg>
+        </span>
+        Insights
+      </a>
+      <a class="dash-nav-item" href="#">
+        <span class="dash-nav-ico" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M19.14 12.94a7.49 7.49 0 0 0 0-1.88l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.6 7.6 0 0 0-1.62-.94l-.36-2.54A.5.5 0 0 0 13.9 1h-3.8a.5.5 0 0 0-.5.42l-.36 2.54c-.57.23-1.12.54-1.62.94l-2.39-.96a.5.5 0 0 0-.6.22L2.7 7.98a.5.5 0 0 0 .12.64l2.03 1.58a7.49 7.49 0 0 0 0 1.88l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.5.4 1.05.71 1.62.94l.36 2.54a.5.5 0 0 0 .5.42h3.8a.5.5 0 0 0 .5-.42l.36-2.54c.57-.23 1.12-.54 1.62-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z" fill="currentColor"/>
+          </svg>
+        </span>
+        Settings
+      </a>
+    </nav>
+
+    <a class="dash-btn-new" href="#">
+      <span class="dash-btn-plus" aria-hidden="true">+</span>
+      New booking
+    </a>
+
+    <div class="dash-sidebar-bottom">
+      <div class="dash-user">
+        <div class="dash-avatar">{{ user.username|slice:":2"|upper }}</div>
+        <div>
+          <div class="dash-user-name">{{ user.get_full_name|default:user.username }}</div>
+          <div class="dash-user-role">Super admin</div>
+        </div>
+      </div>
+      <form method="post" action="{% url 'portal:logout' %}" class="dash-logout-form">
+        {% csrf_token %}
+        <button type="submit" class="dash-logout">Logout</button>
+      </form>
+    </div>
+  </aside>
+
+  <div class="dash-main">
+    <header class="dash-header">
+      <div>
+        <h2 class="dash-page-title">Performance Overview</h2>
+        <p class="dash-page-sub">Real-time analytics and management for ElitePadel club facilities and active reservations.</p>
+      </div>
+      <div class="dash-header-meta">
+        <span class="pill-live"><span class="dot"></span> Live Status</span>
+      </div>
+    </header>
+
+    <section class="dash-kpis" aria-label="KPI">
+      <article class="kpi-card">
+        <div class="kpi-top">
+          <div class="kpi-ico" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M6 2h12a2 2 0 0 1 2 2v16l-3-2-3 2-3-2-3 2-3-2-3 2V4a2 2 0 0 1 2-2Z" fill="currentColor" opacity="0.12"/>
+              <path d="M7 7h10M7 11h10M7 15h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="kpi-delta is-up">+12.5%</span>
+        </div>
+        <div class="kpi-label">Total Bookings</div>
+        <div class="kpi-value">1,284</div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-top">
+          <div class="kpi-ico" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M3 7h18v13H3V7Z" fill="currentColor" opacity="0.12"/>
+              <path d="M7 7V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M3 11h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M7 15h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="kpi-delta is-up">+8.2%</span>
+        </div>
+        <div class="kpi-label">Revenue</div>
+        <div class="kpi-value">$42,920</div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-top">
+          <div class="kpi-ico" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M4 20V4h16v16H4Z" fill="currentColor" opacity="0.12"/>
+              <path d="M7 17h10M7 13h10M7 9h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="kpi-chip">8/10</span>
+        </div>
+        <div class="kpi-label">Active Courts</div>
+        <div class="kpi-value">80%</div>
+      </article>
+    </section>
+
+    <section class="dash-grid">
+      <div class="dash-card dash-card-wide">
+        <div class="dash-card-head">
+          <h3>Recent Activity</h3>
+          <a href="#" class="dash-link">View all</a>
+        </div>
+        <div class="dash-table" role="table" aria-label="Recent activity">
+          <div class="dash-tr dash-th" role="row">
+            <div role="columnheader">Player</div>
+            <div role="columnheader">Court</div>
+            <div role="columnheader">Time</div>
+            <div role="columnheader">Status</div>
+            <div role="columnheader" class="is-right">Amount</div>
+          </div>
+
+          <div class="dash-tr" role="row">
+            <div class="dash-player" role="cell">
+              <span class="dash-avatar-sm">MS</span>
+              <span>Marcus Sterling</span>
+            </div>
+            <div role="cell">Padel Court 01</div>
+            <div role="cell">14:00 – 15:30</div>
+            <div role="cell"><span class="tag tag-ok">CONFIRMED</span></div>
+            <div role="cell" class="is-right">$45.00</div>
+          </div>
+
+          <div class="dash-tr" role="row">
+            <div class="dash-player" role="cell">
+              <span class="dash-avatar-sm">ER</span>
+              <span>Elena Rodriguez</span>
+            </div>
+            <div role="cell">Elite Court 03</div>
+            <div role="cell">15:00 – 16:30</div>
+            <div role="cell"><span class="tag tag-live">ACTIVE</span></div>
+            <div role="cell" class="is-right">$60.00</div>
+          </div>
+
+          <div class="dash-tr" role="row">
+            <div class="dash-player" role="cell">
+              <span class="dash-avatar-sm">JV</span>
+              <span>Julian Vane</span>
+            </div>
+            <div role="cell">Padel Court 02</div>
+            <div role="cell">16:00 – 17:00</div>
+            <div role="cell"><span class="tag tag-warn">PENDING</span></div>
+            <div role="cell" class="is-right">$35.00</div>
+          </div>
+
+          <div class="dash-tr" role="row">
+            <div class="dash-player" role="cell">
+              <span class="dash-avatar-sm">SC</span>
+              <span>Sarah Chen</span>
+            </div>
+            <div role="cell">Elite Court 04</div>
+            <div role="cell">17:30 – 19:00</div>
+            <div role="cell"><span class="tag tag-ok">CONFIRMED</span></div>
+            <div role="cell" class="is-right">$60.00</div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="dash-side">
+        <div class="dash-card">
+          <div class="dash-card-head">
+            <h3>Daily Demand</h3>
+            <span class="chip">Peak</span>
+          </div>
+          <div class="mini-chart" aria-hidden="true">
+            <div class="bar" style="height:22%"></div>
+            <div class="bar" style="height:38%"></div>
+            <div class="bar is-peak" style="height:92%"></div>
+            <div class="bar is-peak" style="height:82%"></div>
+            <div class="bar is-peak" style="height:66%"></div>
+            <div class="bar" style="height:42%"></div>
+            <div class="bar" style="height:28%"></div>
+          </div>
+          <div class="mini-chart-x">
+            <span>08:00</span><span>14:00</span><span>22:00</span>
+          </div>
+          <div class="dash-metrics">
+            <div class="metric">
+              <div class="metric-k">Busy hours today</div>
+              <div class="metric-v">17:00 - 20:00</div>
+            </div>
+            <div class="metric">
+              <div class="metric-k">Expected visitors</div>
+              <div class="metric-v">~142 players</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dash-card dash-card-media">
+          <div class="media-bg" aria-hidden="true"></div>
+          <div class="media-content">
+            <div class="media-kicker">FACILITY INSIGHT</div>
+            <div class="media-title">New court floodlight maintenance scheduled for Monday.</div>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <footer class="dash-footer">
+      <div class="dash-footer-left">ELITEPADEL</div>
+      <div class="dash-footer-right">
+        <a href="#" class="dash-link">Privacy Policy</a>
+        <a href="#" class="dash-link">Terms of Service</a>
+        <a href="#" class="dash-link">Cookie Policy</a>
+      </div>
+    </footer>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "portal/crud/base_crud.html" %}
+
+{% block title %}CRUD — Supprimer terrain{% endblock %}
+{% block page_title %}Supprimer terrain{% endblock %}
+
+{% block page_actions %}
+  <a
+    class="btn-secondary"
+    href="{% url 'portal:terrain_list' %}"
+  >
+    Retour
+  </a>
+{% endblock %}
+
+{% block page_content %}
+  <div class="crud-card crud-card-pad">
+    <div class="alert alert-warn">
+      Confirmer la suppression de <strong>{{ object.nom }}</strong> ?
+    </div>
+    <form method="post" class="crud-actions-row mt-5">
+      {% csrf_token %}
+      <button
+        class="btn-danger"
+        type="submit"
+      >
+        Supprimer
+      </button>
+      <a
+        class="btn-tertiary"
+        href="{% url 'portal:terrain_list' %}"
+      >
+        Annuler
+      </a>
+    </form>
+  </div>
+{% endblock %}
+

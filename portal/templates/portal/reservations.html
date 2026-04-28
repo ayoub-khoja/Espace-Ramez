@@ -1,0 +1,160 @@
+{% extends "portal/base.html" %}
+{% load static %}
+{% block title %}Reservations — Admin Portal{% endblock %}
+{% block body_class %}page-dashboard{% endblock %}
+
+{% block content %}
+<div class="dash-layout">
+  <aside class="dash-sidebar">
+    <div class="dash-brand">
+      <div class="dash-logo">{% include "portal/partials/logo_svg.html" %}</div>
+      <div>
+        <div class="dash-brand-title">Admin Portal</div>
+        <div class="dash-brand-sub">Court management</div>
+      </div>
+    </div>
+
+    <nav class="dash-nav" aria-label="Navigation">
+      <a class="dash-nav-item" href="{% url 'portal:dashboard' %}">
+        <span class="dash-nav-ico" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M3 13h8V3H3v10Zm0 8h8v-6H3v6Zm10 0h8V11h-8v10Zm0-18v6h8V3h-8Z" fill="currentColor"/>
+          </svg>
+        </span>
+        Dashboard
+      </a>
+      <a class="dash-nav-item is-active" href="{% url 'portal:reservations_admin' %}">
+        <span class="dash-nav-ico" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M7 2v2H5a2 2 0 0 0-2 2v3h18V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7Zm14 9H3v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-9Zm-13 3h4v4H8v-4Z" fill="currentColor"/>
+          </svg>
+        </span>
+        Reservations
+      </a>
+      <a class="dash-nav-item" href="#">
+        <span class="dash-nav-ico" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M19.14 12.94a7.49 7.49 0 0 0 0-1.88l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.6 7.6 0 0 0-1.62-.94l-.36-2.54A.5.5 0 0 0 13.9 1h-3.8a.5.5 0 0 0-.5.42l-.36 2.54c-.57.23-1.12.54-1.62.94l-2.39-.96a.5.5 0 0 0-.6.22L2.7 7.98a.5.5 0 0 0 .12.64l2.03 1.58a7.49 7.49 0 0 0 0 1.88l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.5.4 1.05.71 1.62.94l.36 2.54a.5.5 0 0 0 .5.42h3.8a.5.5 0 0 0 .5-.42l.36-2.54c.57-.23 1.12-.54 1.62-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z" fill="currentColor"/>
+          </svg>
+        </span>
+        Settings
+      </a>
+    </nav>
+
+    <a class="dash-btn-new" href="#">
+      <span class="dash-btn-plus" aria-hidden="true">+</span>
+      New booking
+    </a>
+
+    <div class="dash-sidebar-bottom">
+      <div class="dash-user">
+        <div class="dash-avatar">{{ user.username|slice:":2"|upper }}</div>
+        <div>
+          <div class="dash-user-name">{{ user.get_full_name|default:user.username }}</div>
+          <div class="dash-user-role">Super admin</div>
+        </div>
+      </div>
+      <form method="post" action="{% url 'portal:logout' %}" class="dash-logout-form">
+        {% csrf_token %}
+        <button type="submit" class="dash-logout">Logout</button>
+      </form>
+    </div>
+  </aside>
+
+  <div class="dash-main">
+    <header class="dash-header">
+      <div>
+        <h2 class="dash-page-title">Manage Reservations</h2>
+        <p class="dash-page-sub">Real-time oversight of court utilization and player logistics.</p>
+      </div>
+      <div class="dash-kpi-mini">
+        <div class="mini-kpi">
+          <div class="mini-k">Total bookings today</div>
+          <div class="mini-v">{{ kpis.today_bookings }}</div>
+        </div>
+        <div class="mini-kpi">
+          <div class="mini-k">Active courts</div>
+          <div class="mini-v">{{ kpis.active_courts }}</div>
+        </div>
+      </div>
+    </header>
+
+    <section class="res-toolbar" aria-label="Filters">
+      <div class="res-search">
+        <span class="res-ico" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor" stroke-width="2"/>
+            <path d="M16.5 16.5 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <input class="res-input" placeholder="Search by client name, court, or ID..." />
+      </div>
+      <div class="res-filters">
+        <button type="button" class="res-pill">
+          <span class="res-pill-ico" aria-hidden="true">≡</span>
+          Status: <strong>All</strong>
+        </button>
+        <button type="button" class="res-pill">
+          <span class="res-pill-ico" aria-hidden="true">📅</span>
+          Date: <strong>Today</strong>
+        </button>
+        <button type="button" class="res-btn-icon" aria-label="Export">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="m7 10 5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M5 21h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+    </section>
+
+    <section class="res-card">
+      <div class="res-head">
+        <div>Date & time</div>
+        <div>Court</div>
+        <div>Client name</div>
+        <div>Status</div>
+        <div class="is-right">Actions</div>
+      </div>
+
+      {% for r in reservations %}
+      <div class="res-row">
+        <div class="res-when">
+          <div class="res-when-title">{{ r.when_title }}</div>
+          <div class="res-when-sub">{{ r.when_sub }}</div>
+        </div>
+        <div class="res-court">
+          <span class="res-accent res-accent-{{ r.accent }}" aria-hidden="true"></span>
+          <div>
+            <div class="res-court-title">{{ r.court }}</div>
+            <div class="res-court-sub">{{ r.court_sub }}</div>
+          </div>
+        </div>
+        <div class="res-client">
+          <span class="res-client-badge">{{ r.client_initials }}</span>
+          <span class="res-client-name">{{ r.client_name }}</span>
+        </div>
+        <div><span class="tag tag-{{ r.status_style }}">{{ r.status }}</span></div>
+        <div class="is-right">
+          <button type="button" class="res-action" aria-label="Edit">✎</button>
+          <button type="button" class="res-action" aria-label="More">⋯</button>
+        </div>
+      </div>
+      {% endfor %}
+
+      <div class="res-footer">
+        <div class="res-foot-left">Showing 4 of 128 reservations</div>
+        <div class="res-pager" aria-label="Pagination">
+          <button type="button" class="page-btn is-active">1</button>
+          <button type="button" class="page-btn">2</button>
+          <button type="button" class="page-btn">3</button>
+          <span class="page-ellipsis">…</span>
+          <button type="button" class="page-btn">12</button>
+          <button type="button" class="page-btn">›</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}
+

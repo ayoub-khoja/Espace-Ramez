@@ -1,0 +1,70 @@
+{% extends "portal/crud/base_crud.html" %}
+
+{% block title %}CRUD — Terrain{% endblock %}
+{% block page_title %}{% if object %}Modifier terrain{% else %}Ajouter terrain{% endif %}{% endblock %}
+
+{% block page_actions %}
+  <a
+    class="btn-secondary"
+    href="{% url 'portal:terrain_list' %}"
+  >
+    Retour
+  </a>
+{% endblock %}
+
+{% block page_content %}
+  <div class="crud-card crud-card-pad">
+    <form method="post" novalidate class="crud-form">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+          {{ form.non_field_errors }}
+        </div>
+      {% endif %}
+
+      {% for field in form %}
+        <div>
+          <label class="form-label" for="{{ field.id_for_label }}">
+            {{ field.label }}
+          </label>
+          {{ field }}
+          {% if field.help_text %}
+            <div class="form-help">{{ field.help_text }}</div>
+          {% endif %}
+          {% if field.errors %}
+            <div class="form-error">{{ field.errors }}</div>
+          {% endif %}
+        </div>
+      {% endfor %}
+
+      <div class="crud-actions-row">
+        <button
+          class="btn-primary"
+          type="submit"
+        >
+          Enregistrer
+        </button>
+        <a
+          class="btn-tertiary"
+          href="{% url 'portal:terrain_list' %}"
+        >
+          Annuler
+        </a>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    for (const el of document.querySelectorAll("input, select, textarea")) {
+      if (el.type === "checkbox") {
+        el.className = "crud-checkbox";
+      } else if (el.tagName.toLowerCase() === "select") {
+        el.className = "crud-select";
+      } else {
+        el.className = "crud-input";
+      }
+    }
+  </script>
+{% endblock %}
+

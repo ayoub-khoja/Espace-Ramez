@@ -1,0 +1,117 @@
+{% extends "portal/crud/base_crud.html" %}
+
+{% block title %}CRUD — Terrains{% endblock %}
+{% block page_title %}Terrains{% endblock %}
+
+{% block page_actions %}
+  <a
+    class="btn-primary"
+    href="{% url 'portal:terrain_create' %}"
+  >
+    Ajouter
+  </a>
+{% endblock %}
+
+{% block page_content %}
+  <form class="crud-toolbar" method="get">
+    <input
+      class="crud-input"
+      name="q"
+      value="{{ request.GET.q }}"
+      placeholder="Rechercher par nom..."
+    />
+    <button
+      class="btn-secondary"
+      type="submit"
+    >
+      Rechercher
+    </button>
+    <a
+      class="btn-tertiary"
+      href="{% url 'portal:terrain_list' %}"
+    >
+      Reset
+    </a>
+  </form>
+
+  <div class="crud-card">
+    <div class="crud-table-wrap">
+      <table class="crud-table">
+        <thead>
+          <tr>
+            <th>Nom</th>
+            <th>Type</th>
+            <th>Indoor</th>
+            <th>Prix/session</th>
+            <th>Actif</th>
+            <th class="is-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in terrains %}
+            <tr>
+              <td><strong class="crud-strong">{{ t.nom }}</strong></td>
+              <td>{{ t.type }}</td>
+              <td>{% if t.indoor %}Oui{% else %}Non{% endif %}</td>
+              <td>{{ t.prix_par_session }}</td>
+              <td>
+                {% if t.actif %}
+                  <span class="badge badge-ok">
+                    Actif
+                  </span>
+                {% else %}
+                  <span class="badge">
+                    Inactif
+                  </span>
+                {% endif %}
+              </td>
+              <td class="is-right">
+                <div class="crud-actions-inline">
+                  <a
+                    class="btn-small"
+                    href="{% url 'portal:terrain_update' t.pk %}"
+                  >
+                    Modifier
+                  </a>
+                  <a
+                    class="btn-small btn-danger-outline"
+                    href="{% url 'portal:terrain_delete' t.pk %}"
+                  >
+                    Supprimer
+                  </a>
+                </div>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="6" class="text-center crud-muted">Aucun terrain.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% if is_paginated %}
+    <div class="crud-pager">
+      {% if page_obj.has_previous %}
+        <a
+          class="btn-secondary"
+          href="?page={{ page_obj.previous_page_number }}&q={{ request.GET.q }}"
+        >
+          Précédent
+        </a>
+      {% endif %}
+      <span>Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a
+          class="btn-secondary"
+          href="?page={{ page_obj.next_page_number }}&q={{ request.GET.q }}"
+        >
+          Suivant
+        </a>
+      {% endif %}
+    </div>
+  {% endif %}
+{% endblock %}
+
