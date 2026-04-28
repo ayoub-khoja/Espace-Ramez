@@ -1,0 +1,260 @@
+{% extends "portal/base.html" %}
+{% load static %}
+{% block title %}Connexion — Espace client{% endblock %}
+{% block body_class %}page-login{% endblock %}
+
+{% block extra_head %}
+<style>
+  body.page-login {
+    background-color: #030a14;
+    background-image:
+      linear-gradient(155deg, rgba(0, 14, 36, 0.9) 0%, rgba(0, 24, 52, 0.72) 42%, rgba(0, 6, 18, 0.92) 100%),
+      url("{% static 'portal/img/HomeClient.png' %}");
+    background-size: cover;
+    background-position: center 35%;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-wrap">
+  <div class="login-brand">
+    <div class="login-logo" aria-hidden="true">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+        <ellipse cx="10" cy="9" rx="5.5" ry="6.5" transform="rotate(-20 10 9)" stroke="currentColor" stroke-width="1.75"/>
+        <path d="M14 12 L20 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="17.5" cy="17" r="1.85" fill="currentColor"/>
+      </svg>
+    </div>
+    <h1 class="login-brand-title">Espace client</h1>
+    <p class="login-brand-sub">Connexion à votre compte</p>
+  </div>
+
+  <div class="login-flip {% if show_signup %}is-flipped{% endif %}" data-flip-root>
+    <div class="login-flip-inner">
+      <div class="login-flip-face login-flip-front">
+        <div class="login-card">
+          <form method="post" action="{% url 'portal:login' %}" class="login-form">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+              <div class="login-alert" role="alert">
+                {% for err in form.non_field_errors %}<p>{{ err }}</p>{% endfor %}
+              </div>
+            {% endif %}
+
+            <div class="field">
+              <label class="field-label" for="id_username">Identifiant</label>
+              <div class="field-input-wrap">
+                <span class="field-icon" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                  </svg>
+                </span>
+                <input type="text" name="username" id="id_username" class="field-input" placeholder="Nom d’utilisateur ou e-mail"
+                       value="{{ form.username.value|default_if_none:'' }}" autofocus autocomplete="username" required>
+              </div>
+              {% if form.username.errors %}<p class="field-error">{{ form.username.errors.0 }}</p>{% endif %}
+            </div>
+
+            <div class="field">
+              <div class="field-label-row">
+                <label class="field-label" for="id_password">Mot de passe</label>
+                <span class="field-link-muted">Mot de passe oublié</span>
+              </div>
+              <div class="field-input-wrap">
+                <span class="field-icon" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="5" y="11" width="14" height="10" rx="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                </span>
+                <input type="password" name="password" id="id_password" class="field-input" placeholder="••••••••"
+                       autocomplete="current-password" required>
+              </div>
+              {% if form.password.errors %}<p class="field-error">{{ form.password.errors.0 }}</p>{% endif %}
+            </div>
+
+            {% if request.GET.next %}<input type="hidden" name="next" value="{{ request.GET.next }}">{% endif %}
+
+            <button type="submit" class="btn-primary">
+              Se connecter
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                <path d="M10 17 15 12 10 7" stroke-linecap="round"/>
+                <path d="M15 12H3" stroke-linecap="round"/>
+              </svg>
+            </button>
+
+            <p class="badge-danger">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/>
+              </svg>
+              Vos données sont protégées
+            </p>
+
+            <p class="login-alt">
+              Pas encore de compte ?
+              <button type="button" class="login-alt-link" data-flip-to-signup>Créer un compte</button>
+            </p>
+          </form>
+        </div>
+      </div>
+
+      <div class="login-flip-face login-flip-back" aria-hidden="{% if not show_signup %}true{% else %}false{% endif %}">
+        <div class="login-card">
+          <form method="post" action="{% url 'portal:client_signup' %}" class="login-form" novalidate>
+            {% csrf_token %}
+            {% if signup_errors and signup_errors.non_field %}
+              <div class="login-alert" role="alert"><p>{{ signup_errors.non_field }}</p></div>
+            {% endif %}
+
+            <div class="field-row">
+              <div class="field">
+                <label class="field-label" for="su_last_name">Nom</label>
+                <div class="field-input-wrap">
+                  <span class="field-icon" aria-hidden="true">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                      <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                  </span>
+                  <input type="text" name="last_name" id="su_last_name" class="field-input" placeholder="Votre nom"
+                         value="{{ signup_values.last_name|default_if_none:'' }}" autocomplete="family-name" required>
+                </div>
+                {% if signup_errors and signup_errors.last_name %}<p class="field-error">{{ signup_errors.last_name }}</p>{% endif %}
+              </div>
+
+              <div class="field">
+                <label class="field-label" for="su_first_name">Prénom</label>
+                <div class="field-input-wrap">
+                  <span class="field-icon" aria-hidden="true">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                      <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                  </span>
+                  <input type="text" name="first_name" id="su_first_name" class="field-input" placeholder="Votre prénom"
+                         value="{{ signup_values.first_name|default_if_none:'' }}" autocomplete="given-name" required>
+                </div>
+                {% if signup_errors and signup_errors.first_name %}<p class="field-error">{{ signup_errors.first_name }}</p>{% endif %}
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field">
+                <label class="field-label" for="su_email">E-mail</label>
+                <div class="field-input-wrap">
+                  <span class="field-icon" aria-hidden="true">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M4 4h16v16H4z" opacity="0"/>
+                      <path d="M4 8l8 5 8-5"/>
+                      <path d="M4 6h16v12H4z" />
+                    </svg>
+                  </span>
+                  <input type="email" name="email" id="su_email" class="field-input" placeholder="vous@exemple.com"
+                         value="{{ signup_values.email|default_if_none:'' }}" autocomplete="email" required>
+                </div>
+                {% if signup_errors and signup_errors.email %}<p class="field-error">{{ signup_errors.email }}</p>{% endif %}
+              </div>
+
+              <div class="field">
+                <label class="field-label" for="su_phone">Téléphone</label>
+                <div class="field-input-wrap">
+                  <span class="field-icon" aria-hidden="true">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                    </svg>
+                  </span>
+                  <input type="tel" name="phone" id="su_phone" class="field-input" placeholder="+216 ..."
+                         value="{{ signup_values.phone|default_if_none:'' }}" autocomplete="tel">
+                </div>
+                {% if signup_errors and signup_errors.phone %}<p class="field-error">{{ signup_errors.phone }}</p>{% endif %}
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field">
+                <label class="field-label" for="su_password1">Mot de passe</label>
+                <div class="field-input-wrap">
+                  <span class="field-icon" aria-hidden="true">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="5" y="11" width="14" height="10" rx="2"/>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                  </span>
+                  <input type="password" name="password1" id="su_password1" class="field-input" placeholder="••••••••"
+                         autocomplete="new-password" required>
+                </div>
+                {% if signup_errors and signup_errors.password1 %}<p class="field-error">{{ signup_errors.password1 }}</p>{% endif %}
+              </div>
+
+              <div class="field">
+                <label class="field-label" for="su_password2">Confirmer</label>
+                <div class="field-input-wrap">
+                  <span class="field-icon" aria-hidden="true">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="5" y="11" width="14" height="10" rx="2"/>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                  </span>
+                  <input type="password" name="password2" id="su_password2" class="field-input" placeholder="••••••••"
+                         autocomplete="new-password" required>
+                </div>
+                {% if signup_errors and signup_errors.password2 %}<p class="field-error">{{ signup_errors.password2 }}</p>{% endif %}
+              </div>
+            </div>
+
+            <button type="submit" class="btn-primary">
+              Créer mon compte
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                <path d="M10 17 15 12 10 7" stroke-linecap="round"/>
+                <path d="M15 12H3" stroke-linecap="round"/>
+              </svg>
+            </button>
+
+            <p class="login-alt">
+              Déjà un compte ?
+              <button type="button" class="login-alt-link" data-flip-to-login>Se connecter</button>
+            </p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="login-footer">
+    Besoin d’aide ?
+    <a href="mailto:support@espaceramez.tn">Contacter le support</a>
+  </p>
+</div>
+
+<script>
+  (function () {
+    const root = document.querySelector("[data-flip-root]");
+    if (!root) return;
+
+    function flip(toSignup) {
+      root.classList.toggle("is-flipped", !!toSignup);
+    }
+
+    document.addEventListener("click", function (e) {
+      const t = e.target;
+      if (!(t instanceof Element)) return;
+      if (t.closest("[data-flip-to-signup]")) {
+        e.preventDefault();
+        flip(true);
+        return;
+      }
+      if (t.closest("[data-flip-to-login]")) {
+        e.preventDefault();
+        flip(false);
+      }
+    });
+  })();
+</script>
+{% endblock %}
+

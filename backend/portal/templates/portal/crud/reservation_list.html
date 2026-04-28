@@ -1,0 +1,117 @@
+{% extends "portal/crud/base_crud.html" %}
+
+{% block title %}CRUD — Réservations{% endblock %}
+{% block page_title %}Réservations{% endblock %}
+
+{% block page_actions %}
+  <a
+    class="btn-primary"
+    href="{% url 'portal:reservation_create' %}"
+  >
+    Ajouter
+  </a>
+{% endblock %}
+
+{% block page_content %}
+  <form class="crud-toolbar" method="get">
+    <input
+      class="crud-input"
+      name="q"
+      value="{{ request.GET.q }}"
+      placeholder="Rechercher (client ou terrain)..."
+    />
+    <button
+      class="btn-secondary"
+      type="submit"
+    >
+      Rechercher
+    </button>
+    <a
+      class="btn-tertiary"
+      href="{% url 'portal:reservation_list' %}"
+    >
+      Reset
+    </a>
+  </form>
+
+  <div class="crud-card">
+    <div class="crud-table-wrap">
+      <table class="crud-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Heure</th>
+            <th>Terrain</th>
+            <th>Client</th>
+            <th>Statut</th>
+            <th class="is-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in reservations %}
+            <tr>
+              <td><strong class="crud-strong">{{ r.date }}</strong></td>
+              <td>{{ r.heure_debut }} — {{ r.heure_fin }}</td>
+              <td>{{ r.terrain.nom }}</td>
+              <td>{{ r.client.username }}</td>
+              <td>
+                {% if r.statut == "CONFIRMED" %}
+                  <span class="badge badge-ok">Confirmed</span>
+                {% elif r.statut == "IN_PROGRESS" %}
+                  <span class="badge badge-info">In progress</span>
+                {% elif r.statut == "CANCELLED" %}
+                  <span class="badge badge-danger">Cancelled</span>
+                {% else %}
+                  <span class="badge badge-warn">Pending</span>
+                {% endif %}
+              </td>
+              <td class="is-right">
+                <div class="crud-actions-inline">
+                  <a
+                    class="btn-small"
+                    href="{% url 'portal:reservation_update' r.pk %}"
+                  >
+                    Modifier
+                  </a>
+                  <a
+                    class="btn-small btn-danger-outline"
+                    href="{% url 'portal:reservation_delete' r.pk %}"
+                  >
+                    Supprimer
+                  </a>
+                </div>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="6" class="text-center crud-muted">Aucune réservation.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% if is_paginated %}
+    <div class="crud-pager">
+      {% if page_obj.has_previous %}
+        <a
+          class="btn-secondary"
+          href="?page={{ page_obj.previous_page_number }}&q={{ request.GET.q }}"
+        >
+          Précédent
+        </a>
+      {% endif %}
+      <span>Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a
+          class="btn-secondary"
+          href="?page={{ page_obj.next_page_number }}&q={{ request.GET.q }}"
+        >
+          Suivant
+        </a>
+      {% endif %}
+    </div>
+  {% endif %}
+{% endblock %}
+

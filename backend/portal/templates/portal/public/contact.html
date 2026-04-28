@@ -1,0 +1,190 @@
+{% extends "portal/public/base_public.html" %}
+{% load static %}
+
+{% block title %}Contact · Espace Ramez{% endblock %}
+
+{% block content %}
+  <div class="bg-white">
+    <section class="relative overflow-hidden border-b border-zinc-200">
+      <div class="relative h-[260px] sm:h-[320px] lg:h-[360px]">
+        <img
+          src="{% static 'portal/img/HomeClient.png' %}"
+          alt="Contact — Espace Ramez"
+          class="absolute inset-0 h-full w-full object-cover object-center"
+          onerror="this.style.display='none'"
+        />
+        <div class="absolute inset-0 bg-linear-to-b from-[#030712]/85 via-[#0a1628]/70 to-[#030712]/85" aria-hidden></div>
+      </div>
+
+      <div class="relative -mt-16 mx-auto w-full max-w-6xl px-4 pb-10 sm:-mt-20 sm:px-6 sm:pb-12">
+        <div class="rounded-3xl border border-white/15 bg-white/95 px-6 py-8 shadow-[0_12px_50px_rgba(0,0,0,0.18)] backdrop-blur-md sm:px-10 sm:py-10">
+          <header class="grid gap-7 lg:grid-cols-2 lg:items-end lg:gap-12">
+            <div>
+              <p class="text-[11px] font-semibold uppercase tracking-[0.22em] text-sky-700/90 sm:text-xs">
+                Nous contacter
+              </p>
+              <h1 class="mt-4 max-w-xl text-3xl font-bold leading-[1.08] tracking-tight text-[#0a1f3d] sm:text-4xl lg:text-[2.75rem]">
+                Échangez avec notre équipe d'excellence.
+              </h1>
+            </div>
+            <p class="max-w-xl text-base leading-relaxed text-zinc-600 lg:justify-self-end lg:text-right sm:text-lg">
+              Réservation de clinic, abonnements entreprise ou informations tarifaires : notre conciergerie vous accompagne.
+            </p>
+          </header>
+        </div>
+      </div>
+    </section>
+
+    <div class="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-12">
+      <div class="rounded-3xl bg-[#f8f9fa] px-5 py-10 sm:px-8 sm:py-12 lg:px-12 lg:py-14">
+        <div class="mt-12 grid grid-cols-1 gap-6 lg:mt-14 lg:grid-cols-2 lg:items-start lg:gap-8">
+          <div class="flex flex-col gap-6">
+            <div class="rounded-2xl bg-white p-7 shadow-[0_4px_24px_rgba(0,0,0,0.04)] ring-1 ring-zinc-100 sm:p-8">
+              <ul class="space-y-8">
+                <li class="flex gap-4">
+                  <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#ebf2ff] text-[#001f3f]">
+                    📍
+                  </span>
+                  <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-zinc-500">Siège Espace Ramez</p>
+                    <p class="mt-2 text-sm font-semibold leading-relaxed text-[#001f3f] sm:text-base">
+                      Route de la plage, complexe sportif Lamta, 5010 Monastir, Tunisie
+                    </p>
+                  </div>
+                </li>
+                <li class="flex gap-4">
+                  <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#ebf2ff] text-[#001f3f]">
+                    ☎️
+                  </span>
+                  <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-zinc-500">Téléphone</p>
+                    <p class="mt-2 text-sm font-semibold text-[#001f3f] sm:text-base">
+                      <a href="tel:+21671234567" class="hover:underline">+216 71 234 567</a>
+                    </p>
+                    <p class="mt-1 text-sm font-medium text-sky-700">Lun - Dim, 07:00 - 23:00</p>
+                  </div>
+                </li>
+                <li class="flex gap-4">
+                  <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#ebf2ff] text-[#001f3f]">
+                    ✉️
+                  </span>
+                  <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-zinc-500">E-mail</p>
+                    <p class="mt-2 text-sm font-semibold text-[#001f3f] sm:text-base">
+                      <a href="mailto:contact@espaceramez.tn" class="block hover:underline">contact@espaceramez.tn</a>
+                      <a href="mailto:partenariats@espaceramez.tn" class="mt-1 block hover:underline">partenariats@espaceramez.tn</a>
+                    </p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <div class="relative min-h-[280px] overflow-hidden rounded-2xl bg-zinc-900 shadow-md ring-1 ring-zinc-800 sm:min-h-[320px]">
+              <div class="absolute inset-0 opacity-40 mix-blend-overlay">
+                <iframe
+                  title="Carte — Espace Ramez, Lamta"
+                  loading="lazy"
+                  referrerpolicy="no-referrer-when-downgrade"
+                  class="pointer-events-none h-[120%] w-full min-w-[600px] -translate-y-[8%] grayscale contrast-125 sm:min-w-full"
+                  src="https://www.google.com/maps?q=Lamta%2C%20Monastir%2C%20Tunisia&output=embed"
+                ></iframe>
+              </div>
+              <div class="absolute inset-0 bg-linear-to-t from-black/80 via-black/35 to-zinc-900/60"></div>
+              <div class="absolute inset-x-4 bottom-4 flex items-end justify-between gap-3 sm:inset-x-6 sm:bottom-6">
+                <div class="max-w-[min(100%,18rem)] rounded-xl border border-white/20 bg-white/95 p-4 shadow-lg backdrop-blur-sm sm:p-5">
+                  <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-sky-600">Notre emplacement</p>
+                  <p class="mt-1.5 text-sm font-bold text-[#001f3f] sm:text-base">Espace Ramez — Lamta</p>
+                </div>
+                <a
+                  href="https://www.google.com/maps/search/?api=1&query=Lamta%2C%20Monastir%2C%20Tunisia"
+                  target="_blank"
+                  rel="noreferrer"
+                  class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#001f3f] text-white shadow-md transition-opacity hover:opacity-90"
+                  aria-label="Ouvrir l’itinéraire"
+                >
+                  ↗
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div class="rounded-2xl bg-white p-7 shadow-[0_4px_24px_rgba(0,0,0,0.04)] ring-1 ring-zinc-100 sm:p-8 lg:sticky lg:top-28">
+            <h2 class="text-xl font-bold tracking-tight text-[#001f3f] sm:text-2xl">Envoyer un message</h2>
+            <p class="mt-2 text-sm leading-relaxed text-zinc-500">
+              Démonstration (sans envoi réel). On peut le connecter plus tard à une vue Django.
+            </p>
+
+            <form class="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6" action="#" method="post">
+              <div class="grid gap-2 sm:col-span-1">
+                <label for="contact-name" class="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
+                  Nom complet
+                </label>
+                <input
+                  id="contact-name"
+                  name="name"
+                  type="text"
+                  placeholder="Jean Dupont"
+                  autocomplete="name"
+                  class="h-12 w-full rounded-xl border-0 bg-[#f1f3f5] px-4 text-sm text-[#001f3f] shadow-inner outline-none ring-1 ring-zinc-200/80 placeholder:text-zinc-400 focus:ring-2 focus:ring-sky-500/40"
+                />
+              </div>
+              <div class="grid gap-2 sm:col-span-1">
+                <label for="contact-email" class="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
+                  Adresse e-mail
+                </label>
+                <input
+                  id="contact-email"
+                  name="email"
+                  type="email"
+                  placeholder="j.dupont@entreprise.com"
+                  autocomplete="email"
+                  class="h-12 w-full rounded-xl border-0 bg-[#f1f3f5] px-4 text-sm text-[#001f3f] shadow-inner outline-none ring-1 ring-zinc-200/80 placeholder:text-zinc-400 focus:ring-2 focus:ring-sky-500/40"
+                />
+              </div>
+              <div class="grid gap-2 sm:col-span-2">
+                <label for="contact-type" class="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
+                  Type de demande
+                </label>
+                <div class="relative">
+                  <select
+                    id="contact-type"
+                    name="type"
+                    class="h-12 w-full appearance-none rounded-xl border-0 bg-[#f1f3f5] px-4 pr-10 text-sm text-[#001f3f] shadow-inner outline-none ring-1 ring-zinc-200/80 focus:ring-2 focus:ring-sky-500/40"
+                  >
+                    <option value="reservation">Demande de réservation terrain</option>
+                    <option value="corporate">Abonnement ou offre entreprise</option>
+                    <option value="clinic">Clinic ou coaching</option>
+                    <option value="press">Presse & partenariats</option>
+                    <option value="other">Autre sujet</option>
+                  </select>
+                  <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400">▾</span>
+                </div>
+              </div>
+              <div class="grid gap-2 sm:col-span-2">
+                <label for="contact-message" class="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
+                  Votre message
+                </label>
+                <textarea
+                  id="contact-message"
+                  name="message"
+                  rows="6"
+                  placeholder="Comment pouvons-nous vous aider aujourd’hui ?"
+                  class="min-h-[160px] w-full resize-y rounded-xl border-0 bg-[#f1f3f5] px-4 py-3 text-sm text-[#001f3f] shadow-inner outline-none ring-1 ring-zinc-200/80 placeholder:text-zinc-400 focus:ring-2 focus:ring-sky-500/40"
+                ></textarea>
+              </div>
+              <div class="sm:col-span-2">
+                <button
+                  type="button"
+                  class="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#001f3f] text-sm font-bold text-white shadow-md transition-opacity hover:opacity-92 sm:h-14 sm:text-base"
+                >
+                  Envoyer la demande →
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
