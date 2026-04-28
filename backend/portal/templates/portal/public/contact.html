@@ -79,8 +79,11 @@
               </ul>
             </div>
 
-            <div class="relative min-h-[280px] overflow-hidden rounded-2xl bg-zinc-900 shadow-md ring-1 ring-zinc-800 sm:min-h-[320px]">
-              <div class="absolute inset-0 opacity-40 mix-blend-overlay">
+            <div
+              class="relative min-h-[280px] overflow-hidden rounded-2xl bg-zinc-900 shadow-md ring-1 ring-zinc-800 sm:min-h-[320px]"
+              id="map-card"
+            >
+              <div class="absolute inset-0 opacity-40 mix-blend-overlay" id="map-overlay">
                 <iframe
                   title="Carte — Espace Ramez, Lamta"
                   loading="lazy"
@@ -89,15 +92,27 @@
                   src="https://www.google.com/maps?q=Lamta%2C%20Monastir%2C%20Tunisia&output=embed"
                 ></iframe>
               </div>
-              <div class="absolute inset-0 bg-linear-to-t from-black/80 via-black/35 to-zinc-900/60"></div>
-              <div class="absolute inset-x-4 bottom-4 flex items-end justify-between gap-3 sm:inset-x-6 sm:bottom-6">
+              <div
+                class="pointer-events-none absolute inset-0 bg-linear-to-t from-black/80 via-black/35 to-zinc-900/60"
+                id="map-gradient"
+              ></div>
+              <div class="absolute inset-0 z-[2] grid place-items-center">
+                <button
+                  type="button"
+                  id="map-open"
+                  class="inline-flex items-center gap-2 rounded-full bg-white/95 px-5 py-3 text-sm font-bold text-[#001f3f] shadow-lg ring-1 ring-white/40 backdrop-blur-sm transition hover:bg-white"
+                >
+                  Ouvrir la carte
+                  <span aria-hidden="true">→</span>
+                </button>
+              </div>
+              <div class="absolute inset-x-4 bottom-4 z-[2] flex items-end justify-between gap-3 sm:inset-x-6 sm:bottom-6">
                 <div class="max-w-[min(100%,18rem)] rounded-xl border border-white/20 bg-white/95 p-4 shadow-lg backdrop-blur-sm sm:p-5">
                   <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-sky-600">Notre emplacement</p>
                   <p class="mt-1.5 text-sm font-bold text-[#001f3f] sm:text-base">Espace Ramez — Lamta</p>
                 </div>
                 <a
                   href="https://www.google.com/maps/search/?api=1&query=Lamta%2C%20Monastir%2C%20Tunisia"
-                  target="_blank"
                   rel="noreferrer"
                   class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#001f3f] text-white shadow-md transition-opacity hover:opacity-90"
                   aria-label="Ouvrir l’itinéraire"
@@ -186,5 +201,43 @@
       </div>
     </div>
   </div>
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    (function () {
+      const card = document.getElementById('map-card');
+      const btn = document.getElementById('map-open');
+      if (!card || !btn) return;
+
+      btn.addEventListener('click', function () {
+        const iframe = card.querySelector('iframe');
+        if (!iframe) return;
+
+        // Active l'interaction (zoom, déplacer) sans quitter la page.
+        iframe.classList.remove(
+          'pointer-events-none',
+          'grayscale',
+          'contrast-125',
+          'h-[120%]',
+          'min-w-[600px]',
+          '-translate-y-[8%]'
+        );
+        iframe.classList.add('pointer-events-auto', 'h-full', 'min-w-0');
+
+        // Retire le voile sombre au-dessus de la carte.
+        const overlay = document.getElementById('map-overlay');
+        if (overlay) {
+          overlay.style.opacity = '1';
+          overlay.classList.remove('mix-blend-overlay');
+        }
+        const gradient = document.getElementById('map-gradient');
+        if (gradient) gradient.style.display = 'none';
+
+        // Cache le bouton au centre.
+        btn.parentElement && (btn.parentElement.style.display = 'none');
+      });
+    })();
+  </script>
 {% endblock %}
 

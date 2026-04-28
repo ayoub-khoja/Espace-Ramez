@@ -14,7 +14,14 @@ SECRET_KEY = os.environ.get(
     "dev-only-not-for-production-change-with-env",  # noqa: S105
 )
 
-DEBUG = False
+_DJANGO_DEBUG = os.environ.get("DJANGO_DEBUG", "").lower()
+# En local: DEBUG=True par défaut pour voir les erreurs.
+# En production (Render): DEBUG=False par défaut.
+DEBUG = (
+    (_DJANGO_DEBUG in {"1", "true", "yes", "on"})
+    if _DJANGO_DEBUG
+    else (os.environ.get("RENDER") is None)
+)
 
 ALLOWED_HOSTS: list[str] = [
     "espace-ramez.onrender.com",
