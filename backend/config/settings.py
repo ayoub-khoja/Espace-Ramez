@@ -153,8 +153,14 @@ STORAGES = {
 }
 
 # Media uploads (images/vidéos offres)
+# IMPORTANT (Render): sans "Disk" persistant, les fichiers uploadés disparaissent après un redeploy/restart.
+# Si un disque est monté, expose son chemin via RENDER_DISK_PATH (ex: /var/data) pour persister les uploads.
 MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+_render_disk = (os.environ.get("RENDER_DISK_PATH") or "").strip()
+if _render_disk:
+    MEDIA_ROOT = Path(_render_disk) / "media"
+else:
+    MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

@@ -34,9 +34,15 @@
                 {% if o.media %}
                   {% with lower=o.media.name|lower %}
                     {% if lower|slice:"-4:" == ".mp4" or lower|slice:"-5:" == ".webm" %}
-                      <video class="h-40 w-full object-cover" src="{{ o.media.url }}" controls muted playsinline></video>
+                      <video class="h-40 w-full bg-zinc-100 object-cover" src="{{ o.media.url }}" controls muted playsinline></video>
                     {% else %}
-                      <img class="h-40 w-full object-cover" src="{{ o.media.url }}" alt="{{ o.titre }}" />
+                      <img
+                        class="h-40 w-full bg-zinc-100 object-contain"
+                        src="{{ o.media.url }}"
+                        alt="{{ o.titre }}"
+                        onerror="this.style.display='none'; this.closest('.group')?.querySelector('[data-media-fallback]')?.classList.remove('hidden');"
+                      />
+                      <div data-media-fallback class="hidden h-40 w-full bg-zinc-100"></div>
                     {% endif %}
                   {% endwith %}
                 {% endif %}
