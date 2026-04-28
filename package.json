@@ -1,0 +1,15 @@
+{
+  "name": "padel-monorepo",
+  "private": true,
+  "description": "Frontend Next.js + backend Django (SQLite, MVT).",
+  "scripts": {
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "npm --prefix backend run dev",
+    "install:frontend": "npm install --prefix frontend",
+    "install:backend": "cd backend && pip install -r requirements.txt",
+    "pipenv:install": "cd backend && pipenv install",
+    "install:all": "npm run install:frontend",
+    "build:frontend": "npm --prefix frontend run build",
+    "lint:frontend": "npm --prefix frontend run lint"
+  }
+}
