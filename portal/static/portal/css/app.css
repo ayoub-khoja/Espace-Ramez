@@ -22,7 +22,6 @@ body {
 
 .shell { min-height: 100vh; }
 
-/* ——— CRUD admin (sans Tailwind) ——— */
 body.page-crud {
   background: var(--bg);
 }
@@ -250,7 +249,6 @@ body.page-crud {
 .alert-warn { border-color: #fcd34d; background: #fffbeb; color: #78350f; }
 .alert-danger { border-color: #fecaca; background: #fef2f2; color: #7f1d1d; }
 
-/* ——— Login (MVT template) ——— */
 body.page-login {
   color: #f8fafc;
 }
@@ -315,7 +313,6 @@ body.page-login .shell {
   border-color: rgba(255, 255, 255, 0.12);
 }
 
-/* Flip login/signup */
 .login-flip {
   perspective: 1200px;
 }
@@ -513,7 +510,6 @@ body.page-login .shell {
   text-underline-offset: 3px;
 }
 
-/* ——— Dashboard MVT ——— */
 .page-dashboard { background: var(--bg); }
 .dash-layout {
   display: flex;
@@ -848,7 +844,6 @@ body.page-login .shell {
 .dash-footer-left { font-weight: 900; letter-spacing: .08em; }
 .dash-footer-right { display: flex; gap: 1.25rem; flex-wrap: wrap; justify-content: flex-end; }
 
-/* ——— Reservations screen ——— */
 .dash-kpi-mini { display: flex; gap: 0.75rem; flex-wrap: wrap; }
 .mini-kpi {
   background: #fff;
